@@ -3,14 +3,11 @@
  * Edit this file, not the components.
  */
 export const site = {
-  title: "Sobhan's Blog",
+  title: '0xBlu3Guy',
   /** Used in <meta name="author">, the RSS feed and the footer. */
-  author: 'Sobhan',
+  author: '0xBlu3Guy',
   description:
     'Notes on cybersecurity, CTFs, bug bounty, infrastructure and observability.',
-  /** Shown on the homepage under the greeting. */
-  intro:
-    "Welcome to my blog. I write about cybersecurity, CTFs, bug bounty, infrastructure, observability, and things I'm learning.",
   /** BCP-47 language tag for <html lang> and the RSS feed. */
   lang: 'en',
   social: {

@@ -17,7 +17,10 @@ const { title, description, image, publishedDate, tags } = Astro.props;
 const pageTitle = title === site.title ? title : `${title} · ${site.title}`;
 const pageDescription = description || site.description;
 const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
-const imageUrl = image ? new URL(image, Astro.site).href : undefined;
+// A post's own image gets a large card; the logo fallback is square, so it
+// gets the small one.
+const ownImage = image ? new URL(image, Astro.site).href : undefined;
+const imageUrl = ownImage ?? new URL(href('/icon-512.png'), Astro.site).href;
 const articleTags = tags ?? [];
 ---
 
@@ -28,7 +31,10 @@ const articleTags = tags ?? [];
 <meta name="author" content={site.author} />
 <link rel="canonical" href={canonical.href} />
 
-<link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
+<link rel="icon" href={href('/favicon.ico')} sizes="any" />
+<link rel="icon" href={href('/favicon-32.png')} type="image/png" sizes="32x32" />
+<link rel="icon" href={href('/favicon-16.png')} type="image/png" sizes="16x16" />
+<link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
 <link
   rel="alternate"
   type="application/rss+xml"
@@ -52,7 +58,7 @@ const articleTags = tags ?? [];
 ))}
 
 <!-- Twitter/X card -->
-<meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content={ownImage ? 'summary_large_image' : 'summary'} />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={pageDescription} />
 {imageUrl && <meta name="twitter:image" content={imageUrl} />}
