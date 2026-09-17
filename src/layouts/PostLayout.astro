@@ -1,0 +1,96 @@
+---
+import type { Post } from '../lib/posts';
+import BaseLayout from './BaseLayout.astro';
+import PostMeta from '../components/PostMeta.astro';
+import Tag from '../components/Tag.astro';
+import { excerpt, href, readingTime } from '../lib/utils';
+import { Image } from 'astro:assets';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { title, description, date, tags, image, imageAlt } = post.data;
+const summary = description || excerpt(post.body ?? '');
+const minutes = readingTime(post.body ?? '');
+---
+
+<BaseLayout
+  title={title}
+  description={summary}
+  image={image?.src}
+  publishedDate={date}
+  tags={[...tags]}
+>
+  <article class="article">
+    <a class="back-link" href={href('/')}>← Back to posts</a>
+
+    <header class="article__header">
+      <h1 class="article__title">{title}</h1>
+      <div class="article__meta">
+        <PostMeta date={date} minutes={minutes} />
+      </div>
+      {tags.length > 0 && (
+        <ul class="tag-list">
+          {tags.map((tag) => (
+            <li><Tag name={tag} /></li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    {image && (
+      <Image class="article__hero" src={image} alt={imageAlt ?? ''} widths={[720, 1440]} />
+    )}
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    {tags.length > 0 && (
+      <footer class="article__footer">
+        <h2>Tags</h2>
+        <ul class="tag-list">
+          {tags.map((tag) => (
+            <li><Tag name={tag} /></li>
+          ))}
+        </ul>
+      </footer>
+    )}
+  </article>
+</BaseLayout>
+
+<script>
+  // Wrap each code block so a copy button can be positioned over it.
+  const COPIED_MS = 1600;
+
+  document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-button';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText);
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Failed';
+      }
+      button.dataset.copied = 'true';
+      setTimeout(() => {
+        button.textContent = 'Copy';
+        delete button.dataset.copied;
+      }, COPIED_MS);
+    });
+
+    wrapper.appendChild(button);
+  });
+</script>

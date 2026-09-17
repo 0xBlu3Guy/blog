@@ -1,0 +1,22 @@
+---
+import type { Post } from '../lib/posts';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  posts: Post[];
+  showReadingTime?: boolean;
+  emptyMessage?: string;
+}
+
+const { posts, showReadingTime = true, emptyMessage = 'No posts yet.' } = Astro.props;
+---
+
+{posts.length === 0 ? (
+  <p class="empty-state">{emptyMessage}</p>
+) : (
+  <ul class="post-list" id="post-list">
+    {posts.map((post) => (
+      <PostCard post={post} showReadingTime={showReadingTime} />
+    ))}
+  </ul>
+)}

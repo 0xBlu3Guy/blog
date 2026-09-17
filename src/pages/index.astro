@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
+import Search from '../components/Search.astro';
+import { getPosts } from '../lib/posts';
+import { site } from '../site.config';
+
+const posts = await getPosts();
+---
+
+<BaseLayout title={site.title} description={site.description}>
+  <section class="intro">
+    <h1>Hi, I'm {site.author} 👋</h1>
+    <p>{site.intro}</p>
+  </section>
+
+  <section aria-labelledby="latest-posts">
+    <h2 class="section-heading" id="latest-posts">Latest Posts</h2>
+    <Search />
+    <PostList posts={posts} emptyMessage="No posts published yet — check back soon." />
+  </section>
+</BaseLayout>
