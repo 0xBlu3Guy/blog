@@ -1,4 +1,4 @@
-# Sobhan's Blog
+# Blog
 
 A small, fast, Markdown-driven blog built with [Astro](https://astro.build) and
 deployed to GitHub Pages. No database, no backend, no admin panel — a post is a
