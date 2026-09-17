@@ -143,7 +143,8 @@ A frontmatter `image:` is used as the article's header image and as the
 Open Graph / Twitter preview image.
 
 Files in `public/` are copied verbatim instead and are referenced from the site
-root (`/favicon.svg`) — use it for things that must keep their exact filename.
+root (`/favicon.ico`, `/logo-88.png`) — use it for things that must keep
+their exact filename.
 
 ### Code blocks
 
@@ -187,7 +188,7 @@ blog/
 └── astro.config.mjs
 ```
 
-Personal details (title, author, intro paragraph, GitHub and LinkedIn links)
+Personal details (title, author, GitHub and LinkedIn links)
 all live in **`src/site.config.ts`**. Editing components isn't necessary for
 normal changes.
 
@@ -242,3 +243,19 @@ domain root instead.
 | About page copy | `src/pages/about.astro` |
 | Navigation items | `links` array in `src/components/Header.astro` |
 | Code highlighting themes | `shikiConfig` in `astro.config.mjs` |
+| Heading / wordmark fonts | `@font-face` blocks at the top of `src/styles/global.css` |
+| Favicon and logo | the PNGs in `public/` (`favicon*.png`, `favicon.ico`, `logo-88.png`) |
+
+### Fonts
+
+Both webfonts are self-hosted and subset, so the site makes no third-party
+requests and nothing reflows when they load:
+
+- **Inter Tight** (headings) — variable weight clamped to 600–700 and subset to
+  Latin plus typographic punctuation: 22 KB.
+- **Chakra Petch** (the `0xBlu3Guy` wordmark) — subset to the nine characters it
+  actually renders: 900 bytes, small enough that the build inlines it into the
+  CSS.
+
+To change either, replace the `.woff2` in `src/assets/fonts/` and update the
+matching `@font-face` in `src/styles/global.css`.

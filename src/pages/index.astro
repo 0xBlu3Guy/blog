@@ -9,14 +9,11 @@ const posts = await getPosts();
 ---
 
 <BaseLayout title={site.title} description={site.description}>
-  <section class="intro">
-    <h1>Hi, I'm {site.author} 👋</h1>
-    <p>{site.intro}</p>
-  </section>
+  <h1 class="page-title">Latest Posts</h1>
+  <p class="page-subtitle">
+    {posts.length} {posts.length === 1 ? 'post' : 'posts'}, newest first.
+  </p>
 
-  <section aria-labelledby="latest-posts">
-    <h2 class="section-heading" id="latest-posts">Latest Posts</h2>
-    <Search />
-    <PostList posts={posts} emptyMessage="No posts published yet — check back soon." />
-  </section>
+  <Search />
+  <PostList posts={posts} emptyMessage="No posts published yet — check back soon." />
 </BaseLayout>

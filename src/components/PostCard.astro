@@ -22,9 +22,9 @@ const minutes = readingTime(post.body ?? '');
   data-tags={post.data.tags.join(' ')}
 >
   <article>
-    <h3 class="post-card__title">
+    <h2 class="post-card__title">
       <a href={href(`/posts/${post.id}`)}>{post.data.title}</a>
-    </h3>
+    </h2>
     {summary && <p class="post-card__excerpt">{summary}</p>}
     <div class="post-card__footer">
       {post.data.tags.length > 0 && (

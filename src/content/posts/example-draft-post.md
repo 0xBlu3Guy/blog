@@ -15,3 +15,11 @@ so it never reaches GitHub Pages.
 
 Remove the `draft: true` line (or set it to `false`) when the post is ready,
 then commit and push.
+
+## Adding an image
+
+Drop the file in `src/assets/images/`, then reference it relative to this post:
+
+![A directory tree with one folder per challenge](../../assets/images/ctf-notes-layout.png)
+
+That is the whole workflow — no config, no import, no manifest.

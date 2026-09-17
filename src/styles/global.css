@@ -1,3 +1,29 @@
+/*
+  The wordmark font, subset to just the nine characters of "0xBlu3Guy" (900
+  bytes). Self-hosted so the header needs no third-party request; Vite rewrites
+  this relative URL to the hashed, base-path-aware asset at build time.
+*/
+/*
+  Heading face: Inter Tight, variable weight clamped to 600-700 and subset to
+  Latin + typographic punctuation (22 KB). Self-hosted, so no third-party
+  request and no layout shift from a late-arriving webfont.
+*/
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('../assets/fonts/inter-tight-600-700.woff2') format('woff2-variations');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Chakra Petch Wordmark';
+  src: url('../assets/fonts/chakra-petch-700-wordmark.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ---------------------------------------------------------------------------
    Design tokens
    Dark is the default theme; `data-theme="light"` on <html> flips the palette.
@@ -10,8 +36,8 @@
   --border: #222a39;
   --border-strong: #303b4f;
 
-  --text: #e4e8f0;
-  --text-muted: #98a2b8;
+  --text: #c6cfdc;
+  --text-muted: #8e9aae;
   --text-faint: #7c8799;
 
   --accent: #5b9dff;
@@ -29,6 +55,8 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo,
     Consolas, "Liberation Mono", monospace;
+  --font-heading: 'Inter Tight', ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
 
   --content-width: 720px;
   --page-width: 860px;
@@ -95,9 +123,10 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-heading);
   line-height: 1.25;
   font-weight: 650;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.022em;
   margin: 0;
 }
 
@@ -182,16 +211,46 @@ main {
 }
 
 .brand {
-  font-weight: 650;
-  font-size: 1rem;
+  font-family: 'Chakra Petch Wordmark', var(--font-sans);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
 .brand:hover {
-  color: var(--accent);
   text-decoration: none;
+}
+
+.brand__accent {
+  color: var(--accent);
+  transition: color 0.15s ease;
+}
+
+.brand:hover .brand__accent {
+  color: var(--accent-hover);
+}
+
+/* The logo badge keeps its own dark artwork, so it gets a ring instead of the
+   icon-button hover fill. */
+.icon-button--logo:hover {
+  background: transparent;
+}
+
+.brand-logo {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease;
+}
+
+.icon-button--logo:hover .brand-logo,
+.icon-button--logo:focus-visible .brand-logo {
+  border-color: var(--accent-border);
 }
 
 .nav {
