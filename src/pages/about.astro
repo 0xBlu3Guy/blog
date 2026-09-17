@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../site.config';
+---
+
+<BaseLayout
+  title="About"
+  description={`About ${site.author} — ${site.description}`}
+>
+  <div class="about">
+    <h1 class="page-title">About</h1>
+    <p class="page-subtitle">A short introduction.</p>
+
+    <div class="prose">
+      <p>
+        I'm {site.author}. I work on security — breaking things carefully,
+        then writing down what I learned so the next person (usually future me)
+        doesn't have to rediscover it.
+      </p>
+
+      <h2>Security interests</h2>
+      <ul>
+        <li>Web application security and API testing</li>
+        <li>Bug bounty hunting — recon, methodology, and reporting</li>
+        <li>Jeopardy-style CTFs, mostly web and forensics</li>
+        <li>Detection engineering and log analysis</li>
+      </ul>
+
+      <h2>Technical interests</h2>
+      <ul>
+        <li>Linux, shell tooling, and automating the boring parts</li>
+        <li>Infrastructure as code and reproducible environments</li>
+        <li>Observability: metrics, traces, and logs that actually help</li>
+      </ul>
+
+      <h2>Elsewhere</h2>
+      <ul class="link-list">
+        <li>
+          <a href={site.social.github} rel="noopener noreferrer" target="_blank">
+            GitHub
+          </a>
+        </li>
+        {site.social.linkedin && (
+          <li>
+            <a href={site.social.linkedin} rel="noopener noreferrer" target="_blank">
+              LinkedIn
+            </a>
+          </li>
+        )}
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,61 @@
+---
+// Client-side filter over the post cards already on the page: no index to
+// fetch, no dependency, and it degrades to a plain (hidden) input without JS.
+---
+
+<div class="search">
+  <label class="sr-only" for="post-search">Search posts</label>
+  <input
+    id="post-search"
+    class="search__input"
+    type="search"
+    placeholder="Search posts by title, description or tag…"
+    autocomplete="off"
+    hidden
+  />
+  <p class="empty-state" id="search-empty" hidden>No posts match that search.</p>
+</div>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  const input = document.getElementById('post-search') as HTMLInputElement | null;
+  const list = document.getElementById('post-list');
+  const empty = document.getElementById('search-empty');
+  if (!input || !list) throw new Error('search: missing elements');
+
+  // Only reveal the field once we know scripting works.
+  input.hidden = false;
+
+  const cards = Array.from(list.querySelectorAll<HTMLElement>('.post-card'));
+  const haystacks = cards.map((card) =>
+    [card.dataset.title, card.dataset.description, card.dataset.tags]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase(),
+  );
+
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    let visible = 0;
+
+    cards.forEach((card, index) => {
+      const match = query === '' || haystacks[index]!.includes(query);
+      card.hidden = !match;
+      if (match) visible += 1;
+    });
+
+    if (empty) empty.hidden = visible > 0;
+  });
+</script>

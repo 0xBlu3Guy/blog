@@ -1,0 +1,40 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { getTags } from '../../lib/posts';
+import { href } from '../../lib/utils';
+import { tagDescriptions } from '../../site.config';
+
+// One page per tag found in frontmatter — nothing is maintained by hand.
+export const getStaticPaths = (async () => {
+  const tags = await getTags();
+  return tags.map((tag) => ({
+    params: { tag: tag.slug },
+    props: { name: tag.name, posts: tag.posts },
+  }));
+}) satisfies GetStaticPaths;
+
+const { tag } = Astro.params;
+const { name, posts } = Astro.props;
+const blurb = tagDescriptions[tag!];
+const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`;
+---
+
+<BaseLayout
+  title={name}
+  description={blurb ?? `${count} tagged “${name}”.`}
+>
+  <a class="back-link" href={href('/tags')}>← Back to all tags</a>
+
+  <h1 class="page-title">{name}</h1>
+  <p class="page-subtitle">
+    {count}{blurb ? ` · ${blurb}` : ''}
+  </p>
+
+  <PostList
+    posts={posts}
+    showReadingTime={false}
+    emptyMessage={`Nothing tagged “${name}” yet.`}
+  />
+</BaseLayout>

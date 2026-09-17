@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getTags } from '../../lib/posts';
+import { href } from '../../lib/utils';
+
+// Counts come straight from the posts, so there is nothing to keep in sync.
+const tags = await getTags();
+---
+
+<BaseLayout
+  title="Tags"
+  description="Every topic covered on the blog, with post counts."
+>
+  <h1 class="page-title">Tags</h1>
+  <p class="page-subtitle">
+    {tags.length} {tags.length === 1 ? 'tag' : 'tags'} across the blog.
+  </p>
+
+  {tags.length === 0 ? (
+    <p class="empty-state">No tags yet — they appear as soon as a post uses one.</p>
+  ) : (
+    <ul class="tag-grid">
+      {tags.map((tag) => (
+        <li>
+          <a class="tag-card" href={href(`/tags/${tag.slug}`)}>
+            <span class="tag-card__name">{tag.name}</span>
+            <span class="tag-card__count">
+              {tag.posts.length} {tag.posts.length === 1 ? 'post' : 'posts'}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>

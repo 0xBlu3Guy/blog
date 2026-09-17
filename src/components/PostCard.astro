@@ -1,0 +1,40 @@
+---
+import type { Post } from '../lib/posts';
+import { excerpt, href, readingTime } from '../lib/utils';
+import PostMeta from './PostMeta.astro';
+import Tag from './Tag.astro';
+
+interface Props {
+  post: Post;
+  /** Tag pages already state the reading context, so they hide it. */
+  showReadingTime?: boolean;
+}
+
+const { post, showReadingTime = true } = Astro.props;
+const summary = post.data.description || excerpt(post.body ?? '');
+const minutes = readingTime(post.body ?? '');
+---
+
+<li
+  class="post-card"
+  data-title={post.data.title}
+  data-description={summary}
+  data-tags={post.data.tags.join(' ')}
+>
+  <article>
+    <h3 class="post-card__title">
+      <a href={href(`/posts/${post.id}`)}>{post.data.title}</a>
+    </h3>
+    {summary && <p class="post-card__excerpt">{summary}</p>}
+    <div class="post-card__footer">
+      {post.data.tags.length > 0 && (
+        <ul class="tag-list">
+          {post.data.tags.map((tag) => (
+            <li><Tag name={tag} /></li>
+          ))}
+        </ul>
+      )}
+      <PostMeta date={post.data.date} minutes={showReadingTime ? minutes : undefined} />
+    </div>
+  </article>
+</li>

@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/utils';
+---
+
+<BaseLayout title="Page not found" description="That page doesn't exist.">
+  <h1 class="page-title">404</h1>
+  <p class="page-subtitle">That page doesn't exist — it may have been renamed.</p>
+  <p><a href={href('/')}>← Back to posts</a></p>
+</BaseLayout>
