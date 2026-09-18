@@ -26,7 +26,7 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens
-   Dark is the default theme; `data-theme="light"` on <html> flips the palette.
+   The site is dark-only.
 --------------------------------------------------------------------------- */
 :root {
   --bg: #0b0e14;
@@ -71,36 +71,6 @@
   --page-width: 860px;
 
   color-scheme: dark;
-}
-
-:root[data-theme='light'] {
-  --bg: #ffffff;
-  --bg-subtle: #f6f7f9;
-  --surface: #ffffff;
-  --surface-hover: #f6f8fb;
-  --border: #e3e7ed;
-  --border-strong: #cdd4de;
-
-  --text: #16191f;
-  --text-muted: #5b6472;
-  --text-faint: #656e7d;
-
-  --accent: #1f6feb;
-  --accent-hover: #1558c4;
-  --accent-soft: rgba(31, 111, 235, 0.08);
-  --accent-strong: #1a62d6;
-  --accent-border: rgba(31, 111, 235, 0.3);
-
-  --callout-note: #1f6feb;
-  --callout-tip: #1a7f37;
-  --callout-important: #8250df;
-  --callout-warning: #9a6700;
-  --callout-caution: #cf222e;
-
-  --selection: rgba(31, 111, 235, 0.18);
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.06);
-
-  color-scheme: light;
 }
 
 /* ---------------------------------------------------------------------------
@@ -326,19 +296,6 @@ main {
 .icon-button svg {
   width: 18px;
   height: 18px;
-}
-
-/* The toggle shows the icon for the theme you'd switch *to*. */
-.theme-toggle__moon {
-  display: none;
-}
-
-:root[data-theme='light'] .theme-toggle__moon {
-  display: block;
-}
-
-:root[data-theme='light'] .theme-toggle__sun {
-  display: none;
 }
 
 /* Mobile navigation ------------------------------------------------------- */
@@ -822,29 +779,6 @@ main {
   background: none;
   border: 0;
   padding: 0;
-}
-
-/*
-  Shiki is configured with `defaultColor: false`, so it emits a --shiki-light
-  and a --shiki-dark custom property per token and picks no colour itself.
-  Each theme below chooses which set to use.
-*/
-.astro-code,
-.astro-code span {
-  color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
-  font-style: var(--shiki-dark-font-style);
-  font-weight: var(--shiki-dark-font-weight);
-  text-decoration: var(--shiki-dark-text-decoration);
-}
-
-:root[data-theme='light'] .astro-code,
-:root[data-theme='light'] .astro-code span {
-  color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
-  font-style: var(--shiki-light-font-style);
-  font-weight: var(--shiki-light-font-weight);
-  text-decoration: var(--shiki-light-text-decoration);
 }
 
 .copy-button {

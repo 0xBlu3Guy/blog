@@ -32,11 +32,7 @@ export default defineConfig({
     // `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`
     remarkPlugins: [remarkCallouts],
     shikiConfig: {
-      // Two themes so code blocks follow the site's dark/light mode.
-      themes: { light: 'github-light', dark: 'github-dark-dimmed' },
-      // Emit CSS variables only, so global.css can pick the theme that matches
-      // the current colour mode instead of baking one in.
-      defaultColor: false,
+      theme: 'github-dark-dimmed',
       wrap: false,
     },
   },
