@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../site.config';
+
+const source = `${site.social.github}/blog`;
+---
+
+<BaseLayout
+  title="Privacy"
+  description="No cookies, no analytics, no third-party requests — and how to check that for yourself."
+>
+  <article class="article">
+    <header class="article__header">
+      <h1 class="article__title">Privacy</h1>
+      <p class="page-subtitle">Short version: I don't know you were here.</p>
+    </header>
+
+    <div class="prose">
+      <h2>What this site doesn't do</h2>
+      <ul>
+        <li>No cookies.</li>
+        <li>No analytics, visitor counters, tracking pixels or fingerprinting.</li>
+        <li>
+          No third-party requests. Fonts, scripts and images are all served from
+          this site, so no other company sees your visit.
+        </li>
+        <li>Nothing is saved in your browser's storage.</li>
+        <li>No ads, no comments, no forms, no accounts.</li>
+      </ul>
+      <p>
+        I don't know who reads this site, when, from where, or how many times a
+        post has been opened. That's on purpose.
+      </p>
+
+      <h2>What still happens</h2>
+      <p>
+        The site is hosted on GitHub Pages. Like any web host, GitHub receives
+        your IP address and browser details in order to send you the page, and
+        may keep them in its server logs under
+        <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">GitHub's privacy statement</a>.
+        GitHub Pages gives site owners no visitor statistics, so I never see
+        any of it. The same applies when a feed reader fetches the
+        RSS feed.
+      </p>
+      <p>
+        Links to other sites are ordinary links. Once you follow one, that
+        site's own rules apply.
+      </p>
+
+      <h2>Check it yourself</h2>
+      <p>You don't have to take my word for any of this:</p>
+      <ol>
+        <li>
+          Open your browser's developer tools and reload the page. In the
+          <strong>Network</strong> tab, every request goes to
+          <code>{Astro.site!.host}</code>.
+        </li>
+        <li>
+          In the <strong>Application</strong> (Chrome) or <strong>Storage</strong>
+          (Firefox) tab, cookies and local storage are empty.
+        </li>
+        <li>
+          Read the code. The whole site is open source at
+          <a href={source} rel="noopener noreferrer">{source.replace('https://', '')}</a>.
+        </li>
+      </ol>
+
+      <h2>How it's built</h2>
+      <p>
+        Posts are Markdown files, turned into plain HTML by
+        <a href="https://astro.build" rel="noopener noreferrer">Astro</a> when the
+        site is built. There is no server, no database and nothing running
+        behind the pages. Code highlighting and social preview images are also
+        made at build time. The text is set in Inter Tight and the wordmark in
+        Chakra Petch, both served from this site.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

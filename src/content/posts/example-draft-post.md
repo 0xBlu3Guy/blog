@@ -42,3 +42,36 @@ Start a blockquote with a marker to turn it into a callout:
 
 > [!CAUTION]
 > This one breaks things.
+
+## Terminal blocks
+
+Shell blocks (`bash`, `sh`, `zsh`, `shell`, `console`) get a `$` prompt on
+every command. The prompt isn't part of the text, so the Copy button and
+manual selection both skip it:
+
+```bash
+nmap -sV -p- --min-rate 2000 target.example.com
+ffuf -u http://target.example.com/FUZZ \
+     -w ~/wordlists/common.txt
+```
+
+Start lines with `$ ` to show a session. Those lines are commands and the rest
+is output, shown dimmed. Copy takes the commands only:
+
+```bash
+$ whoami
+www-data
+$ sudo -l
+User www-data may run the following commands on target:
+    (root) NOPASSWD: /usr/bin/find
+$ sudo find . -exec /bin/sh \; -quit
+```
+
+## Footnotes
+
+Footnotes use standard Markdown.[^1] They're collected at the end of the post,
+and each one links back to where it was cited.[^scope]
+
+[^1]: Like this one.
+[^scope]: Named footnotes work too, and are numbered automatically.
+

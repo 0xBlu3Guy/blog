@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import remarkCallouts from './src/lib/remark-callouts.ts';
+import { terminalTransformer } from './src/lib/shiki-terminal.ts';
 
 /**
  * On GitHub Actions we can derive the deployed URL from the environment, so the
@@ -33,6 +34,8 @@ export default defineConfig({
     remarkPlugins: [remarkCallouts],
     shikiConfig: {
       theme: 'github-dark-dimmed',
+      // Prompts and dimmed output for shell blocks.
+      transformers: [terminalTransformer()],
       wrap: false,
     },
   },
