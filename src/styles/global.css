@@ -870,23 +870,28 @@ main {
 
 .about__grid {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 40px;
-  align-items: start;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 36px;
+  /* Stretch, so the portrait column runs the full height of the text. */
+  align-items: stretch;
   margin-top: 30px;
 }
 
 /* Portrait ----------------------------------------------------------------- */
 .portrait {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   margin: 0;
-  position: sticky;
-  top: 88px;
 }
 
+/* The frame takes whatever height the text column has, with a floor so a
+   short page still leaves room for a standing shot. */
 .portrait__frame {
   position: relative;
   display: block;
-  aspect-ratio: 1;
+  flex: 1 1 auto;
+  min-height: 560px;
   overflow: hidden;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -941,6 +946,7 @@ main {
 }
 
 .portrait__cap {
+  flex: none;
   margin-top: 10px;
   font-size: 0.76rem;
   letter-spacing: 0.02em;
@@ -1009,15 +1015,33 @@ main {
   font-weight: 500;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .about__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 250px minmax(0, 1fr);
     gap: 28px;
   }
 
+  .portrait__frame {
+    min-height: 440px;
+  }
+}
+
+@media (max-width: 680px) {
+  .about__grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
   .portrait {
-    position: static;
-    max-width: 180px;
+    height: auto;
+    max-width: 300px;
+  }
+
+  /* No text column to match, so fall back to a standing-photo ratio. */
+  .portrait__frame {
+    flex: none;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
   }
 }
 
