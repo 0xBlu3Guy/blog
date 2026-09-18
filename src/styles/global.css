@@ -779,6 +779,26 @@ main {
 
 .prose [data-footnote-ref] {
   scroll-margin-top: 80px;
+  border-radius: 4px;
+}
+
+/* The ↩ link lands here. Near the end of a post the page often can't scroll
+   any further, so the number flashes to show where you are. */
+.prose [data-footnote-ref]:target {
+  background: var(--accent-soft);
+  outline: 1px solid var(--accent-border);
+  animation: footnote-flash 1.2s ease-out 2;
+}
+
+@keyframes footnote-flash {
+  0%, 100% { background: var(--accent-soft); }
+  50% { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prose [data-footnote-ref]:target {
+    animation: none;
+  }
 }
 
 .prose blockquote {
