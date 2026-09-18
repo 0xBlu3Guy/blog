@@ -66,19 +66,3 @@ const articleTags = tags ?? [];
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={pageDescription} />
 {imageUrl && <meta name="twitter:image" content={imageUrl} />}
-
-<!--
-  Applied before first paint so the page never flashes the wrong theme.
-  Dark is the default; only an explicit "light" choice changes it.
--->
-<script is:inline>
-  (() => {
-    try {
-      if (localStorage.getItem('theme') === 'light') {
-        document.documentElement.dataset.theme = 'light';
-      }
-    } catch {
-      /* private mode / storage blocked — stay on the dark default */
-    }
-  })();
-</script>
