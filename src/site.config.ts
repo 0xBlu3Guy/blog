@@ -6,8 +6,7 @@ export const site = {
   title: '0xBlu3Guy',
   /** Used in <meta name="author">, the RSS feed and the footer. */
   author: '0xBlu3Guy',
-  description:
-    'Notes on cybersecurity, CTFs, bug bounty, infrastructure and observability.',
+  description: 'My corner of the internet. No trackers, no AI.',
   /** BCP-47 language tag for <html lang> and the RSS feed. */
   lang: 'en',
   social: {
