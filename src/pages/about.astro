@@ -3,29 +3,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../site.config';
 import { href } from '../lib/utils';
 
-/** Kept here rather than in the markup so the grid stays easy to reorder. */
-const focus = [
-  {
-    title: 'Web & API security',
-    body: 'Access control, auth flows, and the unglamorous logic bugs that turn out to matter most.',
-  },
-  {
-    title: 'Bug bounty',
-    body: 'Recon that is repeatable, notes that survive the week, and reports a tired triager can follow.',
-  },
-  {
-    title: 'CTFs',
-    body: 'Mostly web and forensics. Jeopardy format, scripted first passes, one folder per challenge.',
-  },
-  {
-    title: 'Detection & infra',
-    body: 'Linux, log analysis, and observability — the side that has to notice all of the above.',
-  },
-];
+/**
+ * Swap `portrait` for a real photo when you have one: drop the file in
+ * src/assets/images/, import it, and pass it to <Image /> below.
+ */
+const portrait = href('/icon-512.png');
 
-const toolbox = [
-  'Linux', 'Burp Suite', 'nmap', 'ffuf', 'Python', 'Bash',
-  'Wireshark', 'Docker', 'Git', 'Ghidra',
+const work = [
+  'Web and API security — access control, auth flows, logic bugs',
+  'Bug bounty — repeatable recon, notes that survive the week',
+  'CTFs — Jeopardy format, mostly web and forensics',
+  'Detection and infrastructure — Linux, logs, and noticing things',
 ];
 ---
 
@@ -36,82 +24,61 @@ const toolbox = [
   <div class="about">
     <h1 class="page-title">About</h1>
 
-    <section class="terminal" aria-label="Introduction">
-      <div class="terminal__bar" aria-hidden="true">
-        <span class="terminal__dot"></span>
-        <span class="terminal__dot"></span>
-        <span class="terminal__dot"></span>
-        <span class="terminal__path">~/about</span>
+    <div class="about__grid">
+      <figure class="portrait">
+        <span class="portrait__frame">
+          <img
+            class="portrait__img"
+            src={portrait}
+            width="512"
+            height="512"
+            alt="Portrait of Sobhan, deliberately obscured"
+            loading="eager"
+            decoding="async"
+          />
+          <span class="portrait__grain" aria-hidden="true"></span>
+        </span>
+        <figcaption class="portrait__cap">hover to bring it closer</figcaption>
+      </figure>
+
+      <div class="about__text">
+        <p class="about__lead">
+          I'm Sobhan. I break things carefully, then write down what I learned
+          so the next person — usually future me — doesn't have to rediscover it.
+        </p>
+
+        <p>
+          Most of what I do is web and API security: reading an application
+          until it makes sense, then looking for the place where the story it
+          tells and the thing it does disagree. The tools confirm. They don't
+          discover.
+        </p>
+
+        <h2 class="about__h">What I work on</h2>
+        <ul class="about__list">
+          {work.map((w) => <li>{w}</li>)}
+        </ul>
+
+        <h2 class="about__h">Why this blog</h2>
+        <p>
+          Published notes beat private ones. A private note lets you stay
+          vague; writing for a stranger is how I find out whether I actually
+          understood it.
+        </p>
+
+        <h2 class="about__h">Elsewhere</h2>
+        <p class="about__links">
+          <a href={site.social.github} rel="noopener noreferrer" target="_blank">GitHub</a>
+          {site.social.linkedin && (
+            <>
+              <span aria-hidden="true"> · </span>
+              <a href={site.social.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
+            </>
+          )}
+          <span aria-hidden="true"> · </span>
+          <a href={href('/rss.xml')}>RSS</a>
+        </p>
       </div>
-
-      <div class="terminal__body">
-        <p class="terminal__cmd"><span aria-hidden="true">$ </span>whoami</p>
-        <p class="terminal__out">
-          Sobhan — I break things carefully, then write down what I learned so
-          the next person (usually future me) doesn't have to rediscover it.
-        </p>
-
-        <p class="terminal__cmd"><span aria-hidden="true">$ </span>cat now.txt</p>
-        <p class="terminal__out">
-          Hunting bugs, playing CTFs, and getting better at the defensive side
-          of the same problems.
-        </p>
-
-        <p class="terminal__cmd"><span aria-hidden="true">$ </span>cat why-this-blog.txt</p>
-        <p class="terminal__out">
-          Published notes beat private ones. Writing it down is how I find out
-          whether I actually understood it.
-          <span class="terminal__cursor" aria-hidden="true"></span>
-        </p>
-      </div>
-    </section>
-
-    <section class="about__section" aria-labelledby="focus-heading">
-      <h2 class="about__heading" id="focus-heading">What I spend time on</h2>
-      <ul class="focus-grid">
-        {focus.map((item, i) => (
-          <li class="focus-card">
-            <span class="focus-card__num" aria-hidden="true">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <h3 class="focus-card__title">{item.title}</h3>
-            <p class="focus-card__body">{item.body}</p>
-          </li>
-        ))}
-      </ul>
-    </section>
-
-    <section class="about__section" aria-labelledby="toolbox-heading">
-      <h2 class="about__heading" id="toolbox-heading">Toolbox</h2>
-      <ul class="chip-list">
-        {toolbox.map((tool) => <li class="chip">{tool}</li>)}
-      </ul>
-    </section>
-
-    <section class="about__section" aria-labelledby="elsewhere-heading">
-      <h2 class="about__heading" id="elsewhere-heading">Elsewhere</h2>
-      <ul class="link-list">
-        <li>
-          <a class="about__link" href={site.social.github} rel="noopener noreferrer" target="_blank">
-            <span>GitHub</span>
-            <span class="about__link-meta">@0xBlu3Guy</span>
-          </a>
-        </li>
-        {site.social.linkedin && (
-          <li>
-            <a class="about__link" href={site.social.linkedin} rel="noopener noreferrer" target="_blank">
-              <span>LinkedIn</span>
-              <span class="about__link-meta">profile</span>
-            </a>
-          </li>
-        )}
-        <li>
-          <a class="about__link" href={href('/rss.xml')}>
-            <span>RSS</span>
-            <span class="about__link-meta">subscribe</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+    </div>
   </div>
 </BaseLayout>
