@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import remarkCallouts from './src/lib/remark-callouts.ts';
 
 /**
  * On GitHub Actions we can derive the deployed URL from the environment, so the
@@ -28,6 +29,8 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [sitemap()],
   markdown: {
+    // `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`
+    remarkPlugins: [remarkCallouts],
     shikiConfig: {
       // Two themes so code blocks follow the site's dark/light mode.
       themes: { light: 'github-light', dark: 'github-dark-dimmed' },

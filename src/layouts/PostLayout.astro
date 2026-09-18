@@ -19,7 +19,7 @@ const minutes = readingTime(post.body ?? '');
 <BaseLayout
   title={title}
   description={summary}
-  image={image?.src}
+  image={image?.src ?? href(`/og/${post.id}.png`)}
   publishedDate={date}
   tags={[...tags]}
 >
@@ -47,17 +47,6 @@ const minutes = readingTime(post.body ?? '');
     <div class="prose">
       <slot />
     </div>
-
-    {tags.length > 0 && (
-      <footer class="article__footer">
-        <h2>Tags</h2>
-        <ul class="tag-list">
-          {tags.map((tag) => (
-            <li><Tag name={tag} /></li>
-          ))}
-        </ul>
-      </footer>
-    )}
   </article>
 </BaseLayout>
 

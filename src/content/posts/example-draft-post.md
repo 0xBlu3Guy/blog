@@ -1,7 +1,7 @@
 ---
 title: "Example Draft Post"
 description: "This post is a draft — it shows up in local development and is excluded from the deployed site."
-date: 2026-09-20
+date: 2026-09-01
 draft: true
 tags:
   - CTF
@@ -23,3 +23,22 @@ Drop the file in `src/assets/images/`, then reference it relative to this post:
 ![A directory tree with one folder per challenge](../../assets/images/ctf-notes-layout.png)
 
 That is the whole workflow — no config, no import, no manifest.
+
+## Callouts
+
+Start a blockquote with a marker to turn it into a callout:
+
+> [!NOTE]
+> Plain context the reader should keep in mind.
+
+> [!TIP] Faster recon
+> Text after the marker replaces the default title.
+
+> [!IMPORTANT]
+> Something the reader must not skip.
+
+> [!WARNING]
+> Don't run this against a host you're not authorised to test.
+
+> [!CAUTION]
+> This one breaks things.
