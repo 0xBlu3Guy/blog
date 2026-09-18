@@ -8,12 +8,13 @@ const year = new Date().getFullYear();
 <footer class="site-footer">
   <div class="wrap site-footer__inner">
     <p>© {year} {site.author} · Built with Markdown + GitHub</p>
-    <nav class="site-footer__links" aria-label="Social links">
+    <nav class="site-footer__links" aria-label="Footer links">
       <a href={site.social.github} rel="noopener noreferrer" target="_blank">GitHub</a>
       {site.social.linkedin && (
         <a href={site.social.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
       )}
       <a href={href('/rss.xml')}>RSS</a>
+      <a href={href('/privacy')}>Privacy</a>
     </nav>
   </div>
 </footer>

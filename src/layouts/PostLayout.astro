@@ -54,6 +54,15 @@ const minutes = readingTime(post.body ?? '');
   // Wrap each code block so a copy button can be positioned over it.
   const COPIED_MS = 1600;
 
+  // Terminal blocks copy their commands only: the prompts are drawn by CSS and
+  // output lines are skipped.
+  function copyText(pre: HTMLPreElement): string {
+    if (!pre.classList.contains('is-terminal')) return pre.innerText;
+    return [...pre.querySelectorAll('.line--cmd, .line--cont')]
+      .map((line) => line.textContent ?? '')
+      .join('\n');
+  }
+
   document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block';
@@ -68,7 +77,7 @@ const minutes = readingTime(post.body ?? '');
 
     button.addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText(pre.innerText);
+        await navigator.clipboard.writeText(copyText(pre));
         button.textContent = 'Copied';
       } catch {
         button.textContent = 'Failed';
@@ -81,5 +90,46 @@ const minutes = readingTime(post.body ?? '');
     });
 
     wrapper.appendChild(button);
+  });
+
+  // Click a screenshot to see it full size. Only images that are shown smaller
+  // than their real size are zoomable.
+  const lightbox = document.createElement('dialog');
+  lightbox.className = 'lightbox';
+  lightbox.setAttribute('aria-label', 'Enlarged image');
+  const lightboxImg = document.createElement('img');
+  lightbox.appendChild(lightboxImg);
+  lightbox.addEventListener('click', () => lightbox.close());
+  document.body.appendChild(lightbox);
+
+  function open(img: HTMLImageElement) {
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.showModal();
+  }
+
+  document.querySelectorAll<HTMLImageElement>('.prose img').forEach((img) => {
+    if (img.closest('a')) return;
+
+    const enable = () => {
+      if (img.naturalWidth <= img.clientWidth) return;
+      img.classList.add('is-zoomable');
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', `Enlarge image: ${img.alt}`);
+    };
+    if (img.complete) enable();
+    else img.addEventListener('load', enable, { once: true });
+
+    img.addEventListener('click', () => {
+      if (img.classList.contains('is-zoomable')) open(img);
+    });
+    img.addEventListener('keydown', (event) => {
+      if (!img.classList.contains('is-zoomable')) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        open(img);
+      }
+    });
   });
 </script>
