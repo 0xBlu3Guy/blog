@@ -47,6 +47,13 @@
   --accent-strong: #5b9dff;
   --accent-border: rgba(91, 157, 255, 0.35);
 
+  /* Callout accents: > [!NOTE] / [!TIP] / [!IMPORTANT] / [!WARNING] / [!CAUTION] */
+  --callout-note: #5b9dff;
+  --callout-tip: #4ec27e;
+  --callout-important: #a888ff;
+  --callout-warning: #e3a33b;
+  --callout-caution: #f0645d;
+
   --selection: rgba(91, 157, 255, 0.28);
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
 
@@ -83,6 +90,12 @@
   --accent-soft: rgba(31, 111, 235, 0.08);
   --accent-strong: #1a62d6;
   --accent-border: rgba(31, 111, 235, 0.3);
+
+  --callout-note: #1f6feb;
+  --callout-tip: #1a7f37;
+  --callout-important: #8250df;
+  --callout-warning: #9a6700;
+  --callout-caution: #cf222e;
 
   --selection: rgba(31, 111, 235, 0.18);
   --shadow: 0 1px 2px rgb(16 24 40 / 0.06);
@@ -668,21 +681,6 @@ main {
   border-radius: var(--radius);
 }
 
-.article__footer {
-  margin-top: 48px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-}
-
-.article__footer h2 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 12px;
-}
-
 /* Rendered Markdown -------------------------------------------------------- */
 .prose {
   font-size: 1.125rem;
@@ -732,6 +730,35 @@ main {
   padding: 2px 0 2px 18px;
   border-left: 3px solid var(--accent-border);
   color: var(--text-muted);
+}
+
+/* Callouts ----------------------------------------------------------------- */
+.prose .callout {
+  --tone: var(--callout-note);
+  margin-block: 1.6em;
+  padding: 14px 18px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
+  border-left: 3px solid var(--tone);
+  border-radius: var(--radius-sm);
+}
+
+.prose .callout--tip { --tone: var(--callout-tip); }
+.prose .callout--important { --tone: var(--callout-important); }
+.prose .callout--warning { --tone: var(--callout-warning); }
+.prose .callout--caution { --tone: var(--callout-caution); }
+
+.prose .callout > :first-child { margin-top: 0; }
+.prose .callout > :last-child { margin-bottom: 0; }
+
+.prose .callout__title {
+  margin-bottom: 0.35em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
 }
 
 .prose hr {
