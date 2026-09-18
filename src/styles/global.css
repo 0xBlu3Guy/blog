@@ -885,8 +885,9 @@ main {
   margin: 0;
 }
 
-/* The frame takes whatever height the text column has, with a floor so a
-   short page still leaves room for a standing shot. */
+/* The frame is the whole figure now, so it takes the exact height of the text
+   column — its bottom edge lines up with the last line of text. The floor
+   keeps it tall if the copy is ever shortened. */
 .portrait__frame {
   position: relative;
   display: block;
@@ -943,19 +944,6 @@ main {
 .portrait:hover .portrait__grain,
 .portrait:focus-within .portrait__grain {
   opacity: 0.22;
-}
-
-.portrait__cap {
-  flex: none;
-  margin-top: 10px;
-  font-size: 0.76rem;
-  letter-spacing: 0.02em;
-  color: var(--text-faint);
-  transition: color 0.25s ease;
-}
-
-.portrait:hover .portrait__cap {
-  color: var(--text-muted);
 }
 
 /* Text --------------------------------------------------------------------- */
@@ -1056,16 +1044,11 @@ main {
   .portrait__grain {
     opacity: 0.3;
   }
-
-  .portrait__cap {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .portrait__img,
-  .portrait__grain,
-  .portrait__cap {
+  .portrait__grain {
     transition: none;
   }
 }
