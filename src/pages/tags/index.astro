@@ -12,9 +12,6 @@ const tags = await getTags();
   description="Every topic covered on the blog, with post counts."
 >
   <h1 class="page-title">Tags</h1>
-  <p class="page-subtitle">
-    {tags.length} {tags.length === 1 ? 'tag' : 'tags'} across the blog.
-  </p>
 
   {tags.length === 0 ? (
     <p class="empty-state">No tags yet — they appear as soon as a post uses one.</p>
