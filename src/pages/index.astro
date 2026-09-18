@@ -10,9 +10,6 @@ const posts = await getPosts();
 
 <BaseLayout title={site.title} description={site.description}>
   <h1 class="page-title">Latest Posts</h1>
-  <p class="page-subtitle">
-    {posts.length} {posts.length === 1 ? 'post' : 'posts'}, newest first.
-  </p>
 
   <Search />
   <PostList posts={posts} emptyMessage="No posts published yet — check back soon." />
