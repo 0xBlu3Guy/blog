@@ -1,6 +1,9 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { rehypeHeadingIds } from '@astrojs/markdown-remark';
+import csp from './src/integrations/csp.ts';
+import rehypeHeadingLinks from './src/lib/rehype-heading-links.ts';
 import remarkCallouts from './src/lib/remark-callouts.ts';
 import { terminalTransformer } from './src/lib/shiki-terminal.ts';
 
@@ -28,10 +31,13 @@ export default defineConfig({
   site,
   base,
   trailingSlash: 'ignore',
-  integrations: [sitemap()],
+  integrations: [sitemap(), csp()],
   markdown: {
-    // `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`
+    // `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`,
+    // and `> [!SPOILER]` for collapsed blocks.
     remarkPlugins: [remarkCallouts],
+    // IDs first, so every heading has one to link to.
+    rehypePlugins: [rehypeHeadingIds, rehypeHeadingLinks],
     shikiConfig: {
       theme: 'github-dark-dimmed',
       // Prompts and dimmed output for shell blocks.

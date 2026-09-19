@@ -9,7 +9,8 @@
     id="post-search"
     class="search__input"
     type="search"
-    placeholder="Search posts by title, description or tag…"
+    placeholder="Search posts by title, description or tag…  ( / )"
+    aria-keyshortcuts="/"
     autocomplete="off"
     hidden
   />
@@ -57,5 +58,23 @@
     });
 
     if (empty) empty.hidden = visible > 0;
+  });
+
+  // "/" jumps to the search box from anywhere on the page, unless you're
+  // already typing somewhere. Esc clears it and steps back out.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+    event.preventDefault();
+    input.focus();
+    input.select();
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    input.blur();
   });
 </script>
