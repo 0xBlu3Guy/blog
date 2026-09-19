@@ -5,7 +5,11 @@ import sharp from 'sharp';
 import { formatDate } from './utils';
 
 /**
- * Renders a 1200×630 social preview card for a post at build time.
+ * Renders a 1200×630 social preview card for a post at build time, in the same
+ * style as the site banner (public/og-default.jpg): the emblem and wordmark,
+ * the post's title and tags, and a row of "signal" bars along the bottom whose
+ * pattern is seeded from the title — so every post gets its own, and the same
+ * post always gets the same one.
  *
  * Satori lays out the element tree below (it understands a flexbox subset of
  * CSS) into an SVG, and sharp rasterises that to PNG. Satori can't read
@@ -15,14 +19,13 @@ import { formatDate } from './utils';
 const WIDTH = 1200;
 const HEIGHT = 630;
 
-// The site's dark palette (see :root in global.css).
-const BG = '#0b0e14';
-const BORDER = '#222a39';
-const TEXT = '#c6cfdc';
+// Banner palette.
+const BG = '#070a10';
 const HEADING = '#e6ebf3';
+const TEXT = '#c6cfdc';
 const MUTED = '#8e9aae';
-const ACCENT = '#5b9dff';
-const ACCENT_BORDER = 'rgba(91, 157, 255, 0.45)';
+const BLUE = '#2f8bff';
+const TAG_BORDER = 'rgba(91, 157, 255, 0.45)';
 
 const fontFile = (pkg: string, file: string) =>
   readFile(resolve(process.cwd(), 'node_modules/@fontsource', pkg, 'files', file));
@@ -42,6 +45,17 @@ function loadFonts() {
   return fonts;
 }
 
+// The emblem with its dark background turned into transparency (Satori has no
+// blend modes). 480×418.
+let emblem: Promise<string> | undefined;
+
+function loadEmblem() {
+  emblem ??= readFile(resolve(process.cwd(), 'src/assets/og/emblem.png')).then(
+    (png) => `data:image/png;base64,${png.toString('base64')}`,
+  );
+  return emblem;
+}
+
 type El = { type: string; props: Record<string, unknown> };
 
 const el = (type: string, style: Record<string, unknown>, children?: unknown): El => ({
@@ -51,9 +65,47 @@ const el = (type: string, style: Record<string, unknown>, children?: unknown): E
 
 /** Shrinks long titles so they still fit in three lines. */
 function titleSize(title: string): number {
-  if (title.length <= 36) return 76;
-  if (title.length <= 60) return 64;
-  return 52;
+  if (title.length <= 36) return 78;
+  if (title.length <= 60) return 66;
+  return 54;
+}
+
+/** A small seeded PRNG (mulberry32), so a title always yields the same bars. */
+function seeded(text: string): () => number {
+  let h = 2166136261;
+  for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  return () => {
+    h = (h + 0x6d2b79f5) | 0;
+    let t = Math.imul(h ^ (h >>> 15), 1 | h);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function signalBars(title: string): El {
+  const random = seeded(title);
+  const step = 13.5;
+  const count = Math.floor((WIDTH - 22) / step) + 1;
+  const offset = (WIDTH - (count - 1) * step - 3) / 2; // centre the row
+  const bars = Array.from({ length: count }, (_, i) => {
+    const height = Math.round(10 + random() ** 2 * 100);
+    const alpha = (0.25 + random() * 0.5).toFixed(2);
+    const rgb = random() < 0.25 ? '41, 182, 255' : '47, 139, 255'; // cyan or blue
+    return el('div', {
+      position: 'absolute',
+      left: offset + i * step,
+      bottom: 0,
+      width: 3,
+      height,
+      borderRadius: '2px 2px 0 0',
+      backgroundImage: `linear-gradient(to top, rgba(${rgb}, ${alpha}), rgba(${rgb}, 0))`,
+    });
+  });
+  return el(
+    'div',
+    { position: 'absolute', left: 0, bottom: 0, width: WIDTH, height: 110, display: 'flex' },
+    bars,
+  );
 }
 
 export async function renderOgImage(post: {
@@ -61,10 +113,13 @@ export async function renderOgImage(post: {
   tags: string[];
   date: Date;
 }): Promise<Buffer> {
-  const wordmark = el('div', { display: 'flex', fontFamily: 'Chakra Petch', fontSize: 38, color: TEXT }, [
-    el('span', {}, '0x'),
-    el('span', { color: ACCENT }, 'Blu3'),
-    el('span', {}, 'Guy'),
+  const brand = el('div', { display: 'flex', alignItems: 'center', gap: 18 }, [
+    { type: 'img', props: { src: await loadEmblem(), width: 92, height: 80, style: {} } },
+    el('div', { display: 'flex', fontFamily: 'Chakra Petch', fontSize: 36, color: HEADING }, [
+      el('span', {}, '0x'),
+      el('span', { color: BLUE }, 'Blu3'),
+      el('span', {}, 'Guy'),
+    ]),
   ]);
 
   const title = el(
@@ -73,10 +128,10 @@ export async function renderOgImage(post: {
       display: 'flex',
       fontSize: titleSize(post.title),
       fontWeight: 700,
-      lineHeight: 1.12,
+      lineHeight: 1.1,
       letterSpacing: '-0.02em',
       color: HEADING,
-      maxWidth: 1000,
+      maxWidth: 1040,
     },
     post.title,
   );
@@ -90,9 +145,9 @@ export async function renderOgImage(post: {
         {
           display: 'flex',
           padding: '6px 18px',
-          fontSize: 24,
-          color: MUTED,
-          border: `2px solid ${ACCENT_BORDER}`,
+          fontSize: 23,
+          color: TEXT,
+          border: `2px solid ${TAG_BORDER}`,
           borderRadius: 999,
         },
         tag,
@@ -103,25 +158,35 @@ export async function renderOgImage(post: {
   const footer = el(
     'div',
     { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 },
-    [tags, el('div', { display: 'flex', fontSize: 26, color: MUTED }, formatDate(post.date))],
+    [tags, el('div', { display: 'flex', fontSize: 25, color: MUTED }, formatDate(post.date))],
   );
 
-  const card = el(
+  const content = el(
     'div',
     {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
       width: '100%',
+      height: 520,
+      padding: '52px 72px 34px',
+    },
+    [brand, title, footer],
+  );
+
+  const card = el(
+    'div',
+    {
+      position: 'relative',
+      display: 'flex',
+      width: '100%',
       height: '100%',
-      padding: '64px 72px',
       fontFamily: 'Inter Tight',
       fontWeight: 500,
-      background: BG,
-      borderTop: `8px solid ${ACCENT}`,
-      boxShadow: `inset 0 0 0 2px ${BORDER}`,
+      backgroundColor: BG,
+      backgroundImage: `radial-gradient(ellipse 60% 45% at 50% 100%, rgba(47, 139, 255, 0.14), rgba(47, 139, 255, 0))`,
     },
-    [wordmark, title, footer],
+    [content, signalBars(post.title)],
   );
 
   const svg = await satori(card as Parameters<typeof satori>[0], {
