@@ -8,7 +8,7 @@ interface Props {
   /**
    * Absolute or site-relative URL of a wide social preview image — a post's
    * own `image`, or its generated /og/<slug>.png card. Pages without one fall
-   * back to the square logo.
+   * back to the site banner.
    */
   image?: string;
   /** Set on post pages so Open Graph reports an article. */
@@ -21,10 +21,10 @@ const { title, description, image, publishedDate, tags } = Astro.props;
 const pageTitle = title === site.title ? title : `${title} · ${site.title}`;
 const pageDescription = description || site.description;
 const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
-// A post's own image gets a large card; the logo fallback is square, so it
-// gets the small one.
-const ownImage = image ? new URL(image, Astro.site).href : undefined;
-const imageUrl = ownImage ?? new URL(href('/icon-512.png'), Astro.site).href;
+// Posts pass their own image or generated card; every other page shares the
+// site banner (public/og-default.jpg, 1200×630). Both are wide, so both get
+// the large card.
+const imageUrl = new URL(image ?? href('/og-default.jpg'), Astro.site).href;
 const articleTags = tags ?? [];
 ---
 
@@ -62,7 +62,7 @@ const articleTags = tags ?? [];
 ))}
 
 <!-- Twitter/X card -->
-<meta name="twitter:card" content={ownImage ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={pageDescription} />
 {imageUrl && <meta name="twitter:image" content={imageUrl} />}
