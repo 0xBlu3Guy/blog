@@ -1057,8 +1057,9 @@ main {
 /* ---------------------------------------------------------------------------
    About page
 
-   The portrait starts heavily blurred and grained, and sharpens part of the
-   way on hover or keyboard focus — never all the way.
+   The portrait file itself is blurred (public/about-portrait.jpg), so it is
+   never sharp anywhere, including in the repo. The page blurs it further and
+   grains it, and on hover or keyboard focus shows the file as it is.
 --------------------------------------------------------------------------- */
 .about {
   max-width: var(--page-width);
@@ -1100,9 +1101,12 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Wide frames crop the sides; the short phone frame crops top and bottom,
+     so keep the head and shoulders in view there. */
+  object-position: 50% 28%;
   /* Scaled up so the blur never reveals the edge of the image. */
   transform: scale(1.12);
-  filter: blur(14px) saturate(0.75) contrast(0.9) brightness(0.92);
+  filter: blur(8px) saturate(0.75) contrast(0.9) brightness(0.92);
   transition: filter 0.45s ease, transform 0.45s ease;
 }
 
@@ -1132,8 +1136,8 @@ main {
 
 .portrait:hover .portrait__img,
 .portrait:focus-within .portrait__img {
-  /* Sharper, but deliberately still out of focus. */
-  filter: blur(5px) saturate(0.95) contrast(1) brightness(1);
+  /* The file's own blur is as clear as it ever gets. */
+  filter: blur(0) saturate(0.95) contrast(1) brightness(1);
   transform: scale(1.04);
 }
 
@@ -1233,7 +1237,7 @@ main {
    permanent smear on touch devices. */
 @media (hover: none) {
   .portrait__img {
-    filter: blur(7px) saturate(0.9) contrast(0.98);
+    filter: blur(3px) saturate(0.9) contrast(0.98);
     transform: scale(1.06);
   }
 

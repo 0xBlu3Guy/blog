@@ -4,10 +4,10 @@ import { site } from '../site.config';
 import { href } from '../lib/utils';
 
 /**
- * Swap `portrait` for a real photo when you have one: drop the file in
- * src/assets/images/, import it, and pass it to <Image /> below.
+ * To change the photo, replace public/about-portrait.jpg and update the
+ * width/height below to match the new file. It's shown blurred on purpose.
  */
-const portrait = href('/icon-512.png');
+const portrait = href('/about-portrait.jpg');
 
 const work = [
   'Web and API security — access control, auth flows, logic bugs',
@@ -30,8 +30,8 @@ const work = [
           <img
             class="portrait__img"
             src={portrait}
-            width="512"
-            height="512"
+            width="320"
+            height="640"
             alt="Portrait of Sobhan, deliberately obscured"
             loading="eager"
             decoding="async"
