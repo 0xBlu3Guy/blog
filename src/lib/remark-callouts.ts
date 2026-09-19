@@ -7,6 +7,9 @@
  * An optional title can follow the marker on the same line
  * (`> [!TIP] Faster recon`); otherwise the type name is used. Unknown types
  * are left as ordinary blockquotes.
+ *
+ * `> [!SPOILER]` is the exception: it becomes a collapsed <details> block
+ * that the reader clicks to reveal, for flags and solutions.
  */
 
 const TYPES: Record<string, string> = {
@@ -15,6 +18,7 @@ const TYPES: Record<string, string> = {
   important: 'Important',
   warning: 'Warning',
   caution: 'Caution',
+  spoiler: 'Spoiler',
 };
 
 const MARKER = /^\[!(\w+)\][ \t]*([^\n]*)(?:\n|$)/;
@@ -44,6 +48,18 @@ function transform(node: Node): void {
   if (first.children![0]?.type === 'break') first.children!.shift();
   if (first.children!.length === 0) node.children!.shift();
 
+  const title = match[2].trim() || TYPES[type];
+
+  if (type === 'spoiler') {
+    node.data = { hName: 'details', hProperties: { className: ['spoiler'] } };
+    node.children!.unshift({
+      type: 'paragraph',
+      data: { hName: 'summary', hProperties: { className: ['spoiler__title'] } },
+      children: [{ type: 'text', value: title }],
+    });
+    return;
+  }
+
   node.data = {
     hName: 'div',
     hProperties: { className: ['callout', `callout--${type}`], role: 'note' },
@@ -51,7 +67,7 @@ function transform(node: Node): void {
   node.children!.unshift({
     type: 'paragraph',
     data: { hProperties: { className: ['callout__title'] } },
-    children: [{ type: 'text', value: match[2].trim() || TYPES[type] }],
+    children: [{ type: 'text', value: title }],
   });
 }
 

@@ -808,6 +808,108 @@ main {
   color: var(--text-muted);
 }
 
+/* Heading links (src/lib/rehype-heading-links.ts) -------------------------- */
+.prose .heading-anchor {
+  margin-left: 0.35em;
+  padding: 0 0.15em;
+  font-weight: 500;
+  color: var(--text-faint);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.prose :is(h2, h3, h4):hover .heading-anchor,
+.prose .heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.prose .heading-anchor:hover {
+  color: var(--accent);
+}
+
+/* Touch screens have no hover, so keep the link faintly visible there. */
+@media (hover: none) {
+  .prose .heading-anchor {
+    opacity: 0.45;
+  }
+}
+
+.prose :is(h3, h4) {
+  scroll-margin-top: 80px;
+}
+
+/* Spoilers: > [!SPOILER] -------------------------------------------------- */
+.prose .spoiler {
+  margin-block: 1.6em;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+}
+
+.prose .spoiler__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.prose .spoiler__title::-webkit-details-marker {
+  display: none;
+}
+
+.prose .spoiler__title::before {
+  content: '';
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.prose .spoiler__title::after {
+  content: 'Click to reveal';
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.prose .spoiler__title:hover::after {
+  color: var(--accent);
+}
+
+.prose .spoiler[open] {
+  border-style: solid;
+  border-color: var(--accent-border);
+}
+
+.prose .spoiler[open] > .spoiler__title::before {
+  transform: rotate(45deg);
+}
+
+.prose .spoiler[open] > .spoiler__title::after {
+  content: 'Hide';
+}
+
+.prose .spoiler > :not(summary) {
+  margin-inline: 16px;
+}
+
+.prose .spoiler > :last-child:not(summary) {
+  margin-bottom: 16px;
+}
+
+.prose .spoiler > summary + * {
+  margin-top: 0;
+}
+
 /* Callouts ----------------------------------------------------------------- */
 .prose .callout {
   --tone: var(--callout-note);

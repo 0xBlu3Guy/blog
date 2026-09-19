@@ -21,6 +21,9 @@ preview for this post. Best size is 1440 × 756.
 
 The post title is the only `#` heading. Sections start at `##`.
 
+Hover over any heading and a `#` appears after it. That's a link to the
+section: click it and copy the address bar to share this exact spot.
+
 ### A third-level heading
 
 Use `###` to split a section into parts.
@@ -106,6 +109,20 @@ A checklist:
 >
 > - first point
 > - second point
+
+## Spoilers
+
+For flags, solutions and anything a reader might want to try first. It stays
+collapsed until clicked, and can hold anything, code blocks included:
+
+> [!SPOILER] Flag for the web challenge
+> ```text
+> CTF{n0t_th3_r3al_fl4g}
+> ```
+
+> [!SPOILER]
+> Without a title, it's just called "Spoiler". The privilege escalation was
+> `sudo find` with `-exec`, see the terminal session below.
 
 ## Code
 

@@ -60,6 +60,13 @@ const source = `${site.social.github}/blog`;
           (Firefox) tab, cookies and local storage are empty.
         </li>
         <li>
+          View the page source. Near the top is a
+          <code>Content-Security-Policy</code> tag: an instruction to your
+          browser to refuse any script, font, image or connection from anywhere
+          except this site. If a third-party tracker ever ended up on a page,
+          your browser would refuse to load it.
+        </li>
+        <li>
           Read the code. The whole site is open source at
           <a href={source} rel="noopener noreferrer">{source.replace('https://', '')}</a>.
         </li>
