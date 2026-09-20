@@ -478,44 +478,113 @@ main {
 /* ---------------------------------------------------------------------------
    404
 --------------------------------------------------------------------------- */
-.notfound {
+.lost {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 24px 0 64px;
+  min-height: 520px;
+  /* Full-bleed: the artwork runs to the edges of the window. */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  margin-block: -24px -48px;
+  padding-inline: max(20px, calc(50vw - var(--page-width) / 2 + 20px));
+  overflow: hidden;
 }
 
-.notfound__emblem {
-  width: min(200px, 48vw);
+.lost__art {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: min(58%, 700px);
+  pointer-events: none;
+  /* The scene fades into the page instead of ending in a straight edge. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%),
+    linear-gradient(180deg, transparent 0%, #000 34%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 42%),
+    linear-gradient(180deg, transparent 0%, #000 34%);
+  mask-composite: intersect;
+}
+
+.scene {
+  display: block;
+  width: 100%;
   height: auto;
-  /* Light artwork on black: "screen" drops the black into the page. */
-  mix-blend-mode: screen;
-  opacity: 0.9;
 }
 
-.notfound__code {
-  margin-top: 10px;
+.scene text {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  letter-spacing: 0.35em;
+  font-size: 11px;
+}
+
+.lost__text {
+  position: relative;
+  max-width: 34rem;
+  padding-block: 40px;
+  font-family: var(--font-mono);
+}
+
+.lost__code {
+  margin: 0;
+  font-size: clamp(3.6rem, 2rem + 8vw, 6rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--accent);
 }
 
-.notfound__title {
-  margin: 10px 0 0;
-  font-size: clamp(1.5rem, 1.2rem + 1.6vw, 1.9rem);
+.lost__title {
+  margin: 18px 0 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.15rem, 0.9rem + 1.6vw, 1.7rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
 }
 
-.notfound__text {
-  max-width: 44ch;
-  margin-top: 12px;
+.lost__body {
+  margin-top: 16px;
   color: var(--text-muted);
+  line-height: 1.7;
 }
 
-.notfound__links {
-  margin-top: 26px;
-  font-weight: 500;
+.lost__button {
+  display: inline-block;
+  margin-top: 28px;
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--accent);
+  border: 1.5px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.lost__button:hover,
+.lost__button:focus-visible {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+/* Narrow screens: the artwork sits under the text instead of behind it. */
+@media (max-width: 680px) {
+  .lost {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+  }
+
+  .lost__text {
+    order: 1;
+  }
+
+  .lost__art {
+    order: 2;
+    position: static;
+    width: 100%;
+    margin-top: 20px;
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -1201,6 +1270,9 @@ main {
 .about__text p {
   color: var(--text-muted);
   line-height: 1.8;
+  text-align: justify;
+  /* Hyphenation keeps justified lines from opening up big gaps. */
+  hyphens: auto;
 }
 
 .about__text p + p {

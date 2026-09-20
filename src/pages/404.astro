@@ -1,25 +1,22 @@
 ---
-import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import emblem from '../assets/brand/emblem.png';
+import LostScene from '../components/LostScene.astro';
 import { href } from '../lib/utils';
 ---
 
 <BaseLayout title="Page not found" description="That page doesn't exist.">
-  <div class="notfound">
-    <Image class="notfound__emblem" src={emblem} alt="" widths={[200, 400]} loading="eager" />
-    <p class="notfound__code">404</p>
-    <h1 class="notfound__title">Nothing here. Not even a flag.</h1>
-    <p class="notfound__text">
-      The page may have been renamed, or the link was wrong. The post list is a
-      good place to start again.
-    </p>
-    <p class="notfound__links">
-      <a href={href('/')}>← Back to posts</a>
-      <span aria-hidden="true"> · </span>
-      <a href={href('/tags')}>Tags</a>
-      <span aria-hidden="true"> · </span>
-      <a href={href('/about')}>About</a>
-    </p>
-  </div>
+  <section class="lost">
+    <div class="lost__art"><LostScene /></div>
+
+    <div class="lost__text">
+      <p class="lost__code">404</p>
+      <h1 class="lost__title">Looks like you're off the map.</h1>
+      <p class="lost__body">
+        The content you're looking for<br />
+        doesn't exist, has been moved,<br />
+        or got lost somewhere in the internet.
+      </p>
+      <p><a class="lost__button" href={href('/')}>← Back to blog</a></p>
+    </div>
+  </section>
 </BaseLayout>

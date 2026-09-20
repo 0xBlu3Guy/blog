@@ -1,0 +1,189 @@
+---
+/**
+ * The 404 illustration: a hooded figure and a cat on a cliff at night, looking
+ * over a city, next to a signpost where every route is crossed out.
+ *
+ * Drawn as inline SVG rather than shipped as a picture, so it stays sharp at
+ * any size, weighs a few KB, and follows the site's palette.
+ */
+
+// Deterministic star field (a seeded PRNG, so the sky never changes between
+// builds), kept above the horizon.
+function seeded(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const random = seeded(23);
+const stars = Array.from({ length: 80 }, () => ({
+  x: +(random() * 600).toFixed(1),
+  y: +(random() * 210).toFixed(1),
+  r: +(random() * 1.2 + 0.35).toFixed(2),
+  o: +(random() * 0.65 + 0.15).toFixed(2),
+}));
+
+// Windows and street lights along the valley floor.
+const lights = Array.from({ length: 120 }, () => ({
+  x: +(random() * 600).toFixed(1),
+  y: +(234 + random() * 28).toFixed(1),
+  o: +(random() * 0.8 + 0.1).toFixed(2),
+}));
+
+const signs = [
+  { label: '/this-page', y: 128, strike: false, muted: false },
+  { label: '/home', y: 158, strike: true, muted: true },
+  { label: '/coffee', y: 188, strike: true, muted: true },
+  { label: '?', y: 218, strike: false, muted: false },
+];
+---
+
+<svg
+  class="scene"
+  viewBox="0 0 600 420"
+  role="img"
+  aria-label="A hooded figure and a cat sitting on a cliff at night above a distant city, beside a signpost where every direction is crossed out"
+>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#090f1d" />
+      <stop offset="60%" stop-color="#0b1526" />
+      <stop offset="100%" stop-color="#0d2038" />
+    </linearGradient>
+    <radialGradient id="cityGlow" cx="0.5" cy="1" r="0.75">
+      <stop offset="0%" stop-color="#3f95ff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#3f95ff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="moonGlow">
+      <stop offset="0%" stop-color="#bcd8ff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#bcd8ff" stop-opacity="0" />
+    </radialGradient>
+    <mask id="moonMask">
+      <circle cx="498" cy="74" r="27" fill="#fff" />
+      <circle cx="486" cy="66" r="25" fill="#000" />
+    </mask>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" />
+    </filter>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="600" height="420" fill="url(#sky)" />
+  <g fill="#d5e5ff">
+    {stars.map((s) => <circle cx={s.x} cy={s.y} r={s.r} opacity={s.o} />)}
+  </g>
+  <circle cx="498" cy="74" r="62" fill="url(#moonGlow)" />
+  <circle cx="498" cy="74" r="27" fill="#e4eeff" mask="url(#moonMask)" />
+
+  <!-- Far ridge, then the city in the valley -->
+  <path d="M0 236 L70 210 L138 230 L226 190 L300 228 L372 200 L452 232 L530 208 L600 230 L600 268 L0 268 Z" fill="#0d1728" />
+  <rect x="0" y="228" width="600" height="52" fill="url(#cityGlow)" />
+  <g fill="#9ecbff">
+    {lights.map((l) => <rect x={l.x} y={l.y} width="1.7" height="1.7" opacity={l.o} />)}
+  </g>
+  <path d="M0 276 L600 266 L600 420 L0 420 Z" fill="#0a1220" />
+
+  <!-- The cliff -->
+  <path
+    d="M84 420 L138 366 L176 340 L232 318 L300 308 L360 304 L404 300 L462 304 L508 316 L548 342 L578 378 L600 420 Z"
+    fill="#070c17"
+  />
+  <path
+    d="M138 366 L176 340 L232 318 L300 308 L360 304 L404 300 L462 304 L508 316 L548 342 L578 378"
+    fill="none"
+    stroke="#1d2e4a"
+    stroke-width="1.6"
+    stroke-linejoin="round"
+  />
+  <g stroke="#16263f" stroke-width="1.2" fill="none" opacity="0.9">
+    <path d="M196 360 q40 -18 92 -24" />
+    <path d="M330 384 q60 -30 150 -34" />
+  </g>
+
+  <!-- Signpost: every direction crossed out -->
+  <g>
+    <rect x="243" y="120" width="8" height="188" rx="1.5" fill="#182741" />
+    {signs.map((s) => (
+      <g>
+        <rect
+          x={s.label === '?' ? 212 : 182}
+          y={s.y}
+          width={s.label === '?' ? 70 : 130}
+          height="22"
+          rx="2.5"
+          fill="#131f34"
+          stroke="#26395a"
+          stroke-width="1.3"
+        />
+        <text
+          x={s.label === '?' ? 247 : 247}
+          y={s.y + 15}
+          text-anchor="middle"
+          fill={s.muted ? '#56678a' : '#a8c7ff'}
+        >
+          {s.label}
+        </text>
+        {s.strike && (
+          <line x1="192" x2="302" y1={s.y + 12} y2={s.y + 10} stroke="#56678a" stroke-width="1.5" />
+        )}
+      </g>
+    ))}
+  </g>
+
+  <!-- The cat, sitting and looking at the city -->
+  <g fill="#060b14">
+    <path d="M334 303 q3 -36 17 -38 q14 2 17 38 z" />
+    <path d="M336 272 l1 -14 l9 8 z" />
+    <path d="M360 267 l8 -11 l1 14 z" />
+    <path d="M351 303 q19 -2 19 -17 q0 -9 -7 -9 q4 12 -10 19 z" />
+  </g>
+
+  <!-- The hooded figure, seen from behind: hood, shoulders, backpack, knees -->
+  <g>
+    <ellipse cx="428" cy="302" rx="56" ry="6" fill="#05090f" opacity="0.85" />
+
+    <!-- backpack, tucked behind the back -->
+    <g transform="rotate(-7 386 274)">
+      <rect x="368" y="248" width="34" height="50" rx="12" fill="#101d33" />
+      <path d="M372 264 h26 M372 280 h26" stroke="#24395c" stroke-width="1.6" fill="none" />
+    </g>
+
+    <!-- shoulders and back -->
+    <path d="M396 302 Q390 256 406 244 L444 244 Q460 256 454 302 Z" fill="#0f1c31" />
+
+    <!-- hood: a dome with a soft peak -->
+    <path
+      d="M402 248 Q398 214 420 200 Q430 194 436 200 Q456 214 452 248 Q428 260 402 248 Z"
+      fill="#132340"
+    />
+    <path
+      d="M403 244 Q400 216 420 202 Q430 196 436 202"
+      fill="none"
+      stroke="#31507f"
+      stroke-width="2.2"
+      stroke-linecap="round"
+    />
+
+    <!-- knees drawn up, and the shin coming down to the rock -->
+    <path d="M450 302 Q444 278 458 272 Q474 267 478 284 Q481 300 472 302 Z" fill="#101e34" />
+    <circle cx="463" cy="279" r="13" fill="#132339" />
+    <path d="M466 292 Q478 294 479 300 Q479 303 474 303 L462 303 Z" fill="#070d18" />
+
+    <!-- arm resting over the knee -->
+    <path d="M440 254 Q460 259 466 272 Q468 279 461 279 Q456 268 438 266 Z" fill="#0c1727" />
+
+    <!-- the glow of a visor, facing the city -->
+    <ellipse cx="450" cy="232" rx="7" ry="4.5" fill="#5b9dff" filter="url(#glow)" />
+    <ellipse cx="450" cy="232" rx="3.8" ry="2.5" fill="#d8e9ff" />
+  </g>
+
+  <!-- Grass tufts along the cliff edge -->
+  <g stroke="#17293f" stroke-width="1.4" fill="none" stroke-linecap="round">
+    <path d="M300 306 l-5 -14 M306 306 l1 -16 M312 307 l7 -12" />
+    <path d="M498 313 l-6 -13 M504 314 l1 -15 M510 315 l7 -11" />
+    <path d="M214 316 l-5 -12 M220 317 l1 -13" />
+  </g>
+</svg>

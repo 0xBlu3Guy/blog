@@ -8,19 +8,11 @@ import { href } from '../lib/utils';
  * width/height below to match the new file. It's shown blurred on purpose.
  */
 const portrait = href('/about-portrait.jpg');
-
-const work = [
-  'Web and API security — access control, auth flows, logic bugs',
-  'Bug bounty — repeatable recon, notes that survive the week',
-  'CTFs — Jeopardy format, mostly web and forensics',
-  'Detection and infrastructure — Linux, logs, and noticing things',
-];
+const repo = `${site.social.github}/blog`;
+const mailto = `mailto:${site.email}`;
 ---
 
-<BaseLayout
-  title="About"
-  description={site.description}
->
+<BaseLayout title="About" description={site.description}>
   <div class="about">
     <h1 class="page-title">About</h1>
 
@@ -41,54 +33,71 @@ const work = [
       </figure>
 
       <div class="about__text">
+        <h2 class="about__h">About me</h2>
         <p class="about__lead">
-          I'm Sobhan. I break things carefully, then write down what I learned
-          so the next person — usually future me — doesn't have to rediscover it.
+          I have a passion for computer games and being in nature, especially
+          when it is dark and cold (a huge plus if it is snowing :D).
         </p>
 
         <p>
-          Most of what I do is web and API security: reading an application
-          until it makes sense, then looking for the place where the story it
-          tells and the thing it does disagree. The tools confirm. They don't
-          discover.
+          I work as an Observability Engineer, and have a really (I mean
+          really!) strong interest in Cybersecurity, particularly Malware
+          Research Labs.
         </p>
 
-        <h2 class="about__h">What I work on</h2>
-        <ul class="about__list">
-          {work.map((w) => <li>{w}</li>)}
-        </ul>
-
-        <h2 class="about__h">Why this blog</h2>
+        <h2 class="about__h">About this website</h2>
         <p>
-          Published notes beat private ones. A private note lets you stay
-          vague; writing for a stranger is how I find out whether I actually
-          understood it.
+          <strong>No tracking:</strong> there is not a single analytics tool or
+          user tracking on this website. No information or cookies will be
+          collected, and I have no idea how many visits my website has, or who
+          visited it and when.
         </p>
 
-        <h2 class="about__h">Privacy</h2>
         <p>
-          This site sets no cookies and runs no analytics or tracking of any
-          kind, and every page is served from this site alone, with no fonts,
-          scripts or embeds pulled from anywhere else. I don't know who visits,
-          when, or how many times a post has been read.
+          <strong>No use of generative AI:</strong> I use AI daily for work,
+          research, learning, building tools and even for fun, but I am
+          strongly against using AI for communication between humans, and I
+          think it is important to disclose that all content of this website is
+          created by me, in my own words, without any involvement of AI (AI is
+          used during building the website, but not the content itself).
         </p>
+
         <p>
-          Nothing is stored in your browser either. The
-          <a href={href('/privacy')}>privacy page</a> has the details, and how
-          to check them yourself.
+          If you're reading something here, you're reading my thoughts,
+          opinions and words; not AI-generated text.
+        </p>
+
+        <h2 class="about__h">How do I make this website?</h2>
+        <p>
+          I write all the content in Markdown and keep it in a small
+          <a href={repo} rel="noopener noreferrer">GitHub repository</a>
+          that builds this website. The Markdown is turned into HTML with
+          <a href="https://astro.build" rel="noopener noreferrer">Astro</a>,
+          so every page is a plain static file with no server behind it.
+        </p>
+
+        <p>
+          For non-technical people: the paragraph above might sound complicated
+          and technical, but creating a website can actually be very simple and
+          accessible to everyone. Having your own space on the Internet gives
+          you much more control over what you share, rather than relying fully
+          on social media platforms, where your content ultimately lives within
+          someone else's ecosystem and is practically owned by them.
+        </p>
+
+        <p>
+          If you want to set up your own site and need some help, you can take a
+          look at the <a href={repo} rel="noopener noreferrer">GitHub repository</a>,
+          and if you have any questions, <a href={mailto}>let me know</a>!
         </p>
 
         <h2 class="about__h">Elsewhere</h2>
         <p class="about__links">
           <a href={site.social.github} rel="noopener noreferrer" target="_blank">GitHub</a>
-          {site.social.linkedin && (
-            <>
-              <span aria-hidden="true"> · </span>
-              <a href={site.social.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
-            </>
-          )}
           <span aria-hidden="true"> · </span>
-          <a href={href('/rss.xml')}>RSS</a>
+          <a href={site.social.telegram} rel="noopener noreferrer" target="_blank">Telegram</a>
+          <span aria-hidden="true"> · </span>
+          <a href={site.social.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
         </p>
       </div>
     </div>

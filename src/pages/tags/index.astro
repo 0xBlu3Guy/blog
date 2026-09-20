@@ -14,7 +14,7 @@ const tags = await getTags();
   <h1 class="page-title">Tags</h1>
 
   {tags.length === 0 ? (
-    <p class="empty-state">No tags yet — they appear as soon as a post uses one.</p>
+    <p class="empty-state">No tags yet: they appear as soon as a post uses one.</p>
   ) : (
     <ul class="tag-grid">
       {tags.map((tag) => (
