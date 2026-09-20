@@ -4,12 +4,22 @@ import { formatDate, isoDate } from '../lib/utils';
 interface Props {
   date: Date;
   minutes?: number;
+  /** Shown after the reading time when a post has been revised later. */
+  updated?: Date;
 }
 
-const { date, minutes } = Astro.props;
+const { date, minutes, updated } = Astro.props;
 ---
 
 <p class="post-meta">
   <time datetime={isoDate(date)}>{formatDate(date)}</time>
   {minutes !== undefined && <> · {minutes} min read</>}
+  {updated && (
+    <>
+      {' · '}
+      <span class="post-meta__updated">
+        Updated <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+      </span>
+    </>
+  )}
 </p>

@@ -13,6 +13,8 @@ const posts = defineCollection({
       /** Optional: falls back to the post's first paragraph. */
       description: z.string().optional(),
       date: z.coerce.date(),
+      /** Optional: overrides the "Updated" date taken from git history. */
+      updated: z.coerce.date().optional(),
       tags: z.array(z.string().min(1)).default([]),
       /** Drafts are visible with `npm run dev`, excluded from builds. */
       draft: z.boolean().default(false),

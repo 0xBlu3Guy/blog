@@ -465,10 +465,57 @@ main {
   gap: 10px 14px;
 }
 
+.post-meta__updated {
+  color: var(--accent);
+}
+
 .post-meta {
   font-size: 0.82rem;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   404
+--------------------------------------------------------------------------- */
+.notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 0 64px;
+}
+
+.notfound__emblem {
+  width: min(200px, 48vw);
+  height: auto;
+  /* Light artwork on black: "screen" drops the black into the page. */
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+.notfound__code {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+}
+
+.notfound__title {
+  margin: 10px 0 0;
+  font-size: clamp(1.5rem, 1.2rem + 1.6vw, 1.9rem);
+}
+
+.notfound__text {
+  max-width: 44ch;
+  margin-top: 12px;
+  color: var(--text-muted);
+}
+
+.notfound__links {
+  margin-top: 26px;
+  font-weight: 500;
 }
 
 /* ---------------------------------------------------------------------------

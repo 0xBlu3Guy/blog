@@ -24,6 +24,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`;
 <BaseLayout
   title={name}
   description={blurb ?? `${count} tagged “${name}”.`}
+  image={href(`/og/tags/${tag}.png`)}
 >
   <a class="back-link" href={href('/tags')}>← Back to all tags</a>
 

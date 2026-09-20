@@ -1,10 +1,25 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import emblem from '../assets/brand/emblem.png';
 import { href } from '../lib/utils';
 ---
 
 <BaseLayout title="Page not found" description="That page doesn't exist.">
-  <h1 class="page-title">404</h1>
-  <p class="page-subtitle">That page doesn't exist — it may have been renamed.</p>
-  <p><a href={href('/')}>← Back to posts</a></p>
+  <div class="notfound">
+    <Image class="notfound__emblem" src={emblem} alt="" widths={[200, 400]} loading="eager" />
+    <p class="notfound__code">404</p>
+    <h1 class="notfound__title">Nothing here. Not even a flag.</h1>
+    <p class="notfound__text">
+      The page may have been renamed, or the link was wrong. The post list is a
+      good place to start again.
+    </p>
+    <p class="notfound__links">
+      <a href={href('/')}>← Back to posts</a>
+      <span aria-hidden="true"> · </span>
+      <a href={href('/tags')}>Tags</a>
+      <span aria-hidden="true"> · </span>
+      <a href={href('/about')}>About</a>
+    </p>
+  </div>
 </BaseLayout>

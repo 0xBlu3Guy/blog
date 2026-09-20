@@ -5,11 +5,11 @@ import sharp from 'sharp';
 import { formatDate } from './utils';
 
 /**
- * Renders a 1200×630 social preview card for a post at build time, in the same
- * style as the site banner (public/og-default.jpg): the emblem and wordmark,
- * the post's title and tags, and a row of "signal" bars along the bottom whose
- * pattern is seeded from the title — so every post gets its own, and the same
- * post always gets the same one.
+ * Renders 1200×630 social preview cards at build time — one per post, one per
+ * tag page — in the same style as the site banner (public/og-default.jpg): the
+ * emblem and wordmark, the page's own heading, and a row of "signal" bars along
+ * the bottom whose pattern is seeded from that heading, so every card differs
+ * and the same page always renders the same one.
  *
  * Satori lays out the element tree below (it understands a flexbox subset of
  * CSS) into an SVG, and sharp rasterises that to PNG. Satori can't read
@@ -50,7 +50,7 @@ function loadFonts() {
 let emblem: Promise<string> | undefined;
 
 function loadEmblem() {
-  emblem ??= readFile(resolve(process.cwd(), 'src/assets/og/emblem.png')).then(
+  emblem ??= readFile(resolve(process.cwd(), 'src/assets/brand/emblem.png')).then(
     (png) => `data:image/png;base64,${png.toString('base64')}`,
   );
   return emblem;
@@ -108,12 +108,8 @@ function signalBars(title: string): El {
   );
 }
 
-export async function renderOgImage(post: {
-  title: string;
-  tags: string[];
-  date: Date;
-}): Promise<Buffer> {
-  const brand = el('div', { display: 'flex', alignItems: 'center', gap: 18 }, [
+async function brandRow(): Promise<El> {
+  return el('div', { display: 'flex', alignItems: 'center', gap: 18 }, [
     { type: 'img', props: { src: await loadEmblem(), width: 92, height: 80, style: {} } },
     el('div', { display: 'flex', fontFamily: 'Chakra Petch', fontSize: 36, color: HEADING }, [
       el('span', {}, '0x'),
@@ -121,25 +117,52 @@ export async function renderOgImage(post: {
       el('span', {}, 'Guy'),
     ]),
   ]);
+}
 
-  const title = el(
+/** The shared frame: background, glow, bars, and the three stacked rows. */
+async function card(seed: string, heading: El, footer: El): Promise<Buffer> {
+  const content = el(
     'div',
     {
       display: 'flex',
-      fontSize: titleSize(post.title),
-      fontWeight: 700,
-      lineHeight: 1.1,
-      letterSpacing: '-0.02em',
-      color: HEADING,
-      maxWidth: 1040,
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      width: '100%',
+      height: 520,
+      padding: '52px 72px 34px',
     },
-    post.title,
+    [await brandRow(), heading, footer],
   );
 
-  const tags = el(
+  const frame = el(
+    'div',
+    {
+      position: 'relative',
+      display: 'flex',
+      width: '100%',
+      height: '100%',
+      fontFamily: 'Inter Tight',
+      fontWeight: 500,
+      backgroundColor: BG,
+      backgroundImage:
+        'radial-gradient(ellipse 60% 45% at 50% 100%, rgba(47, 139, 255, 0.14), rgba(47, 139, 255, 0))',
+    },
+    [content, signalBars(seed)],
+  );
+
+  const svg = await satori(frame as Parameters<typeof satori>[0], {
+    width: WIDTH,
+    height: HEIGHT,
+    fonts: await loadFonts(),
+  });
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+function tagPills(tags: string[]): El {
+  return el(
     'div',
     { display: 'flex', flexWrap: 'wrap', gap: 12 },
-    post.tags.slice(0, 4).map((tag) =>
+    tags.slice(0, 4).map((tag) =>
       el(
         'div',
         {
@@ -154,45 +177,66 @@ export async function renderOgImage(post: {
       ),
     ),
   );
+}
 
+const heading = (text: string, size: number) =>
+  el(
+    'div',
+    {
+      display: 'flex',
+      fontSize: size,
+      fontWeight: 700,
+      lineHeight: 1.1,
+      letterSpacing: '-0.02em',
+      color: HEADING,
+      maxWidth: 1040,
+    },
+    text,
+  );
+
+/** A post's card: title, tags and date. */
+export async function renderOgImage(post: {
+  title: string;
+  tags: string[];
+  date: Date;
+}): Promise<Buffer> {
   const footer = el(
     'div',
     { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 },
-    [tags, el('div', { display: 'flex', fontSize: 25, color: MUTED }, formatDate(post.date))],
+    [
+      tagPills(post.tags),
+      el('div', { display: 'flex', fontSize: 25, color: MUTED }, formatDate(post.date)),
+    ],
   );
+  return card(post.title, heading(post.title, titleSize(post.title)), footer);
+}
 
-  const content = el(
+/** A tag page's card: the tag name and how many posts use it. */
+export async function renderTagImage(tag: {
+  name: string;
+  count: number;
+  blurb?: string;
+}): Promise<Buffer> {
+  const label = el(
     'div',
-    {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      width: '100%',
-      height: 520,
-      padding: '52px 72px 34px',
-    },
-    [brand, title, footer],
+    { display: 'flex', alignItems: 'baseline', gap: 10, maxWidth: 1040 },
+    [
+      el('span', { display: 'flex', fontSize: 74, fontWeight: 700, color: BLUE }, '#'),
+      heading(tag.name, titleSize(tag.name)),
+    ],
   );
-
-  const card = el(
+  const posts = `${tag.count} ${tag.count === 1 ? 'post' : 'posts'}`;
+  const footer = el(
     'div',
-    {
-      position: 'relative',
-      display: 'flex',
-      width: '100%',
-      height: '100%',
-      fontFamily: 'Inter Tight',
-      fontWeight: 500,
-      backgroundColor: BG,
-      backgroundImage: `radial-gradient(ellipse 60% 45% at 50% 100%, rgba(47, 139, 255, 0.14), rgba(47, 139, 255, 0))`,
-    },
-    [content, signalBars(post.title)],
+    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 },
+    [
+      el(
+        'div',
+        { display: 'flex', fontSize: 25, color: MUTED, maxWidth: 820 },
+        tag.blurb ?? '',
+      ),
+      el('div', { display: 'flex', fontSize: 25, color: TEXT }, posts),
+    ],
   );
-
-  const svg = await satori(card as Parameters<typeof satori>[0], {
-    width: WIDTH,
-    height: HEIGHT,
-    fonts: await loadFonts(),
-  });
-  return sharp(Buffer.from(svg)).png().toBuffer();
+  return card(tag.name, label, footer);
 }
