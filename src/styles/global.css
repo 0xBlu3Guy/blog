@@ -849,6 +849,11 @@ h4,
   border-radius: var(--radius);
 }
 
+/* Opt-in centering for a standalone image: wrap it in <div class="center">. */
+.prose .center img {
+  margin-inline: auto;
+}
+
 .prose img.is-zoomable {
   cursor: zoom-in;
 }
