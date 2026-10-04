@@ -10,23 +10,19 @@ const source = `${site.social.github}/blog`;
   description="No cookies, no analytics, no third-party requests, and how to check that for yourself."
 >
   <article class="article">
-    <header class="article__header">
-      <h1 class="article__title">Privacy</h1>
-      <p class="page-subtitle">Short version: I don't know you were here.</p>
-    </header>
+    <h1 class="page-title">Privacy</h1>
 
-    <div class="prose">
+    <div class="prose prose--page">
       <h2>What this site doesn't do</h2>
-      <ul>
-        <li>No cookies.</li>
-        <li>No analytics, visitor counters, tracking pixels or fingerprinting.</li>
-        <li>
-          No third-party requests. Fonts, scripts and images are all served from
-          this site, so no other company sees your visit.
-        </li>
-        <li>Nothing is saved in your browser's storage.</li>
-        <li>No ads, no comments, no forms, no accounts.</li>
-      </ul>
+      <p>
+        This site sets no cookies and saves nothing in your browser's storage.
+        There are no analytics, no visitor counters, no tracking pixels and no
+        fingerprinting, so nothing on the page is quietly working out who you are.
+        It makes no third-party requests either: the fonts, scripts and images all
+        come from this site, so no other company ever sees your visit. And there is
+        nothing to sign up for or fill in, because there are no ads, no comments,
+        no forms and no accounts.
+      </p>
       <p>
         I don't know who reads this site, when, from where, or how many times a
         post has been opened. That's on purpose.
@@ -71,16 +67,6 @@ const source = `${site.social.github}/blog`;
           <a href={source} rel="noopener noreferrer">{source.replace('https://', '')}</a>.
         </li>
       </ol>
-
-      <h2>How it's built</h2>
-      <p>
-        Posts are Markdown files, turned into plain HTML by
-        <a href="https://astro.build" rel="noopener noreferrer">Astro</a> when the
-        site is built. There is no server, no database and nothing running
-        behind the pages. Code highlighting and social preview images are also
-        made at build time. The text is set in Inter Tight and the wordmark in
-        Chakra Petch, both served from this site.
-      </p>
     </div>
   </article>
 </BaseLayout>

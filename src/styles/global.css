@@ -834,6 +834,35 @@ h4,
   scroll-margin-top: 80px;
 }
 
+/* "Page" flavour used by standalone pages like Privacy: the About page's quieter
+   type scale and small-caps section labels, while staying inside .prose so code,
+   lists and links keep their styling. */
+.page-lead {
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 36px;
+}
+
+.prose--page {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.prose--page p,
+.prose--page li {
+  color: var(--text-muted);
+}
+
+.prose--page h2 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 40px 0 14px;
+  padding-top: 0;
+}
+
 .prose ul,
 .prose ol {
   padding-left: 1.4em;
