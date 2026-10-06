@@ -788,6 +788,40 @@ main {
   border-radius: var(--radius);
 }
 
+.draft-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 24px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.draft-badge__tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.related {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.related__heading {
+  font-size: 1.15rem;
+  margin-bottom: 20px;
+}
+
 /* Rendered Markdown -------------------------------------------------------- */
 /* Avoid a single word dropping onto its own line. */
 h1,
@@ -1153,6 +1187,8 @@ h4,
   font-size: 0.98rem;
   display: block;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 .prose th,
@@ -1189,11 +1225,22 @@ h4,
   margin: 0;
   padding: 16px 18px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   font-size: 0.92rem;
   line-height: 1.6;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   tab-size: 2;
+}
+
+/* A little more breathing room is wasted on a phone; reclaim it so more of a
+   long code line is visible before it needs scrolling. */
+@media (max-width: 480px) {
+  .prose pre {
+    padding: 12px 12px;
+    font-size: 0.82rem;
+  }
 }
 
 .prose pre code {

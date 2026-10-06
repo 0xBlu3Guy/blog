@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { isoDate } from './utils';
 
 /**
  * Last commit date per post file, so a revised post can say "Updated …"
@@ -59,7 +60,11 @@ export function lastCommitDate(postId: string): Date | undefined {
 
 /**
  * The date to show as "Updated", or undefined when there's nothing worth
- * showing: a post edited on the day it was published isn't "updated".
+ * showing. A post's last edit only counts as an update when it falls on a
+ * different calendar day than publication: if the last edit is the same date
+ * as the published date, it isn't shown at all. Dates are compared by their
+ * UTC day, matching how they're displayed, so the threshold can't drift with
+ * the server's timezone.
  */
 export function updatedDate(
   postId: string,
@@ -68,6 +73,5 @@ export function updatedDate(
 ): Date | undefined {
   const candidate = fromFrontmatter ?? lastCommitDate(postId);
   if (!candidate) return undefined;
-  const dayLater = new Date(published).setHours(24, 0, 0, 0);
-  return candidate.getTime() > dayLater ? candidate : undefined;
+  return isoDate(candidate) !== isoDate(published) ? candidate : undefined;
 }

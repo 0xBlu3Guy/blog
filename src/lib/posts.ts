@@ -16,6 +16,36 @@ export async function getPosts(): Promise<Post[]> {
   return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 }
 
+/**
+ * Posts most related to `post`, ranked by how many tags they share with it.
+ *
+ * Tags are compared by slug, so "Bug Bounty" and "bug bounty" count as a match.
+ * The post itself is never returned, posts sharing no tag are dropped, and ties
+ * are broken by date (newest first). Drafts follow the same dev/prod rule as
+ * everywhere else because the candidates come from `getPosts`.
+ */
+export async function getRelatedPosts(post: Post, limit = 3): Promise<Post[]> {
+  const tagSlugs = new Set(post.data.tags.map(slugify).filter(Boolean));
+  if (tagSlugs.size === 0) return [];
+
+  const posts = await getPosts();
+  return posts
+    .filter((candidate) => candidate.id !== post.id)
+    .map((candidate) => ({
+      candidate,
+      shared: candidate.data.tags.filter((tag) => tagSlugs.has(slugify(tag)))
+        .length,
+    }))
+    .filter(({ shared }) => shared > 0)
+    .sort(
+      (a, b) =>
+        b.shared - a.shared ||
+        b.candidate.data.date.getTime() - a.candidate.data.date.getTime(),
+    )
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
 export interface TagSummary {
   /** The tag as written in frontmatter, e.g. "Web Security". */
   name: string;
