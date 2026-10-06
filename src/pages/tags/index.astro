@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getTags } from '../../lib/posts';
 import { href } from '../../lib/utils';
+import { tagDescriptions } from '../../site.config';
 
 // Counts come straight from the posts, so there is nothing to keep in sync.
 const tags = await getTags();
@@ -21,6 +22,9 @@ const tags = await getTags();
         <li>
           <a class="tag-card" href={href(`/tags/${tag.slug}`)}>
             <span class="tag-card__name">{tag.name}</span>
+            {tagDescriptions[tag.slug] && (
+              <span class="tag-card__desc">{tagDescriptions[tag.slug]}</span>
+            )}
             <span class="tag-card__count">
               {tag.posts.length} {tag.posts.length === 1 ? 'post' : 'posts'}
             </span>

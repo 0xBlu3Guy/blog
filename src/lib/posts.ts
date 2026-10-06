@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { slugify } from './utils';
+import { tagList } from '../site.config';
 
 export type Post = CollectionEntry<'posts'>;
 
@@ -16,36 +17,6 @@ export async function getPosts(): Promise<Post[]> {
   return posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 }
 
-/**
- * Posts most related to `post`, ranked by how many tags they share with it.
- *
- * Tags are compared by slug, so "Bug Bounty" and "bug bounty" count as a match.
- * The post itself is never returned, posts sharing no tag are dropped, and ties
- * are broken by date (newest first). Drafts follow the same dev/prod rule as
- * everywhere else because the candidates come from `getPosts`.
- */
-export async function getRelatedPosts(post: Post, limit = 3): Promise<Post[]> {
-  const tagSlugs = new Set(post.data.tags.map(slugify).filter(Boolean));
-  if (tagSlugs.size === 0) return [];
-
-  const posts = await getPosts();
-  return posts
-    .filter((candidate) => candidate.id !== post.id)
-    .map((candidate) => ({
-      candidate,
-      shared: candidate.data.tags.filter((tag) => tagSlugs.has(slugify(tag)))
-        .length,
-    }))
-    .filter(({ shared }) => shared > 0)
-    .sort(
-      (a, b) =>
-        b.shared - a.shared ||
-        b.candidate.data.date.getTime() - a.candidate.data.date.getTime(),
-    )
-    .slice(0, limit)
-    .map(({ candidate }) => candidate);
-}
-
 export interface TagSummary {
   /** The tag as written in frontmatter, e.g. "Web Security". */
   name: string;
@@ -55,15 +26,23 @@ export interface TagSummary {
 }
 
 /**
- * Collect every tag used across all posts, with its posts attached.
+ * Every tag: all the ones listed in site.config.ts (even with no posts yet),
+ * plus any other tag a post uses, each with its posts attached. Sorted
+ * alphabetically.
  *
  * Tags are matched case-insensitively by slug, so "Bug Bounty" and "bug bounty"
- * end up on the same page. The display name is taken from the first post that
- * uses the tag (which, because posts are sorted, is the most recent one).
+ * end up on the same page. Configured tags keep their configured name; others
+ * take the name from the most recent post that uses them. `devOnly` tags are
+ * left out of production builds.
  */
 export async function getTags(): Promise<TagSummary[]> {
   const posts = await getPosts();
   const tags = new Map<string, TagSummary>();
+
+  for (const { name, devOnly } of tagList) {
+    if (devOnly && !import.meta.env.DEV) continue;
+    tags.set(slugify(name), { name, slug: slugify(name), posts: [] });
+  }
 
   for (const post of posts) {
     for (const name of post.data.tags) {
@@ -78,7 +57,7 @@ export async function getTags(): Promise<TagSummary[]> {
     }
   }
 
-  return [...tags.values()].sort(
-    (a, b) => b.posts.length - a.posts.length || a.name.localeCompare(b.name),
+  return [...tags.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
   );
 }

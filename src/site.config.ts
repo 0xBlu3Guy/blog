@@ -1,3 +1,5 @@
+import { slugify } from './lib/utils';
+
 /**
  * Everything personal about the site lives here.
  * Edit this file, not the components.
@@ -20,18 +22,22 @@ export const site = {
 } as const;
 
 /**
- * Optional one-line blurbs shown at the top of a tag page (/tags/<slug>).
- * Keys are tag slugs. Tags without an entry simply show the post count.
- * This is entirely optional: tag pages are generated from post frontmatter,
- * never from this list.
+ * Every tag the blog knows about. Each one gets a card on the tags page and its
+ * own page, even before any post uses it (it then shows 0 posts). Tags used in
+ * a post but missing here still appear, just without a description.
+ * `devOnly` tags only show while running `npm run dev`.
  */
-export const tagDescriptions: Record<string, string> = {
-  ctf: "Posts about CTFs, challenges, writeups and things I've learned.",
-  'bug-bounty': 'Recon, methodology and writeups from bug bounty hunting.',
-  'web-security': 'Attacking and defending web applications.',
-  security: 'General security notes, tooling and defensive work.',
-  thoughts: 'Less technical posts: reflections on the journey.',
-  methodology: 'How I organise work, take notes and stay repeatable.',
-  career: 'Learning, growth and working in this field.',
-  cybersecurity: 'Broad security topics that cut across disciplines.',
-};
+export const tagList: { name: string; description: string; devOnly?: boolean }[] = [
+  { name: 'Bug Bounty', description: 'Recon, methodology and findings from bug bounty.' },
+  { name: 'CTF', description: 'Challenge writeups and what each one taught me.' },
+  { name: 'Methodology', description: 'How I work, take notes and stay repeatable.' },
+  { name: 'Thoughts', description: 'Less technical posts and reflections.' },
+  { name: 'Vulnerability Research', description: 'Bugs I found in real software, and how.' },
+  { name: 'Web Security', description: 'Breaking and fixing web applications.' },
+  { name: 'Reference', description: 'Examples of every element this blog supports.', devOnly: true },
+];
+
+/** Tag descriptions by slug, e.g. tagDescriptions['web-security']. */
+export const tagDescriptions: Record<string, string> = Object.fromEntries(
+  tagList.map((tag) => [slugify(tag.name), tag.description]),
+);
