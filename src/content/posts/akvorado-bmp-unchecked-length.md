@@ -3,7 +3,6 @@ title: "Six Bytes, Four Gigabytes: the Crash I Found in a Tool We Run"
 description: "A single 6-byte packet makes Akvorado's BMP server reserve ~4 GiB, and a few connections crash it. The story of an unauthenticated integer-underflow DoS I found in a tool we run at work. CVSS 7.5, GHSA-wr88-h9r3-fqh3."
 date: 2026-10-04
 tags:
-  - Security
   - Vulnerability Research
 ---
 

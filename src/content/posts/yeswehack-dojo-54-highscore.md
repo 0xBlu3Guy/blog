@@ -231,11 +231,7 @@ solved popup fires. In the DOM, the shell element ends up with
 `id` to `2` returns `bob`'s row instead, which is how I confirmed the id genuinely
 comes from my input and isn't baked into the code.
 
-<div class="center">
-
 ![The "You've Pwned It!" popup confirming Dojo #54 Highscore was completed](../../assets/images/yeswehack-dojo-54-highscore/solved-popup.png)
-
-</div>
 
 > [!SPOILER] Flag
 > ```text
