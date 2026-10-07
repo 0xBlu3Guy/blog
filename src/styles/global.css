@@ -101,8 +101,8 @@
   --font-heading: 'Inter Tight', ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
 
-  --content-width: 660px;
-  --page-width: 860px;
+  --content-width: 860px;
+  --page-width: 900px;
 
   color-scheme: dark;
 }
@@ -913,7 +913,10 @@ h4,
 
 .prose img {
   display: block;
-  /* Centered by default; images narrower than the column sit in the middle. */
+  /* Capped and centered: images never stretch to fill the wide text column,
+     they sit at their natural size up to this width. */
+  max-width: min(100%, 720px);
+  height: auto;
   margin-inline: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
