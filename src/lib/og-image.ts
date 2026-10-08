@@ -215,7 +215,6 @@ export async function renderOgImage(post: {
 export async function renderTagImage(tag: {
   name: string;
   count: number;
-  blurb?: string;
 }): Promise<Buffer> {
   const label = el(
     'div',
@@ -226,17 +225,6 @@ export async function renderTagImage(tag: {
     ],
   );
   const posts = `${tag.count} ${tag.count === 1 ? 'post' : 'posts'}`;
-  const footer = el(
-    'div',
-    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 },
-    [
-      el(
-        'div',
-        { display: 'flex', fontSize: 25, color: MUTED, maxWidth: 820 },
-        tag.blurb ?? '',
-      ),
-      el('div', { display: 'flex', fontSize: 25, color: TEXT }, posts),
-    ],
-  );
+  const footer = el('div', { display: 'flex', fontSize: 25, color: TEXT }, posts);
   return card(tag.name, label, footer);
 }

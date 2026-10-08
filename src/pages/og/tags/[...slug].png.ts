@@ -1,7 +1,6 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getTags } from '../../../lib/posts';
 import { renderTagImage } from '../../../lib/og-image';
-import { tagDescriptions } from '../../../site.config';
 
 // One preview card per tag page, at /og/tags/<slug>.png.
 export const getStaticPaths = (async () => {
@@ -13,10 +12,6 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute<{ name: string; slug: string; count: number }> = async ({ props }) => {
-  const png = await renderTagImage({
-    name: props.name,
-    count: props.count,
-    blurb: tagDescriptions[props.slug],
-  });
+  const png = await renderTagImage({ name: props.name, count: props.count });
   return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
 };

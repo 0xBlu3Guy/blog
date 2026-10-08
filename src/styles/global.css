@@ -697,14 +697,6 @@ main {
   color: var(--accent);
 }
 
-.tag-card__desc {
-  display: block;
-  margin: 4px 0 8px;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: var(--text-muted);
-}
-
 .tag-card__count {
   margin-top: auto;
   font-size: 0.82rem;
