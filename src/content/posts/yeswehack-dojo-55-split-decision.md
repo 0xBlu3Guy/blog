@@ -1,7 +1,7 @@
 ---
 title: "YesWeHack Dojo #55: Two Parsers, One Boundary"
 description: "A multipart Content-Type parsed two ways. The gateway's regex reads one boundary, Python's email module reads another, and the same body quietly declares two different scopes. How I found and exploited the split in Dojo #55."
-date: 2026-10-06
+date: 2026-11-01
 tags:
   - CTF
   - Web Security
