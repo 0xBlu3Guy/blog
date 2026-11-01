@@ -8,43 +8,35 @@ tags:
 draft: false
 ---
 
-Most of the bugs I enjoy the most are not about finding a secret input. They are
-about two pieces of code looking at the exact same bytes and disagreeing on what
-those bytes mean. [Dojo #55](https://dojo-yeswehack.com/challenge-of-the-month/dojo-55),
-called "Split Decision," is one of those, and the name is basically the solution
-written on the box. After [last month's challenge](/blog/posts/yeswehack-dojo-54-highscore)
-turned on a byte-versus-character length mismatch, this one scratched the same
-itch from a different angle: a parser differential hiding in a multipart
-`Content-Type`.
+The header `multipart/form-data; boundary*0=bbbb; boundary=aaaa` declares a
+boundary twice. In [Dojo #55](https://dojo-yeswehack.com/challenge-of-the-month/dojo-55),
+called "Split Decision," the first component to read that header picked `aaaa`
+and forwarded the request, and the second component picked `bbbb` from the
+identical bytes and handed back the flag. Nothing in the request was malformed.
+Both parsers did what their own rules told them to do. They were just given
+different rules to follow.
 
-> [!NOTE] TL;DR
-> A diagnostic bundle passes through a validating gateway before an export
-> service acts on it. The gateway reads the multipart boundary with a hand-rolled
-> regex that only honors a plain `boundary=`. The export service re-parses the
-> same header with Python's `email` module, which implements RFC 2231 and
-> assembles `boundary*0=`. Put `boundary*0=bbbb` *before* `boundary=aaaa`, and the
-> two layers split the body on different delimiters: the gateway sees
-> `scope=public` and forwards the request, while the export service sees
-> `scope=internal` and hands back the token.
+That disagreement is the part I find interesting in this class of bug.
+[Dojo #54](/blog/posts/yeswehack-dojo-54-highscore) turned on a byte-versus-character
+length mismatch. This one scratched the same itch from a different angle: a
+parser differential hiding in a multipart `Content-Type`.
 
-> [!NOTE] How I Used AI
-> This one was hard for me, and a lot of my understanding of it came from
-> working through it with AI. I leaned on it to make sense of the two parsers,
-> to read RFC 2231 properly, and to see why the parameter ordering mattered. The
-> words here are mine, but the understanding behind them was not all my own this
-> time.
+I used AI heavily on this one. Making sense of the two parsers, reading RFC 2231
+properly, and seeing why parameter order mattered all came out of working through
+it that way. The words here are mine; the understanding behind them was not all
+my own.
 
-## The shape of the thing
+## The two-stage pipeline
 
 The setup is a two-stage pipeline, and I control two inputs: a `Content-Type`
 header value and a multipart body. The request goes to
 `POST /v1/support/bundles/preview`, and this is what happens to it:
 
-1. An **edge gateway** pulls the multipart boundary out of the `Content-Type`,
+1. An edge gateway pulls the multipart boundary out of the `Content-Type`,
    parses the body with that boundary, and forwards the request only if it reads
    a field `scope=public`. The idea is that only redacted, public bundles are
    allowed to leave the support network.
-2. An **export service** then re-parses the original header and body on its own.
+2. An export service then re-parses the original header and body on its own.
    If it reads `scope=internal`, the response it builds includes a privileged
    bundle, and that bundle carries `SUPPORT_EXPORT_TOKEN`.
 
@@ -58,13 +50,13 @@ exact same bytes. That is the premise the whole challenge rests on: the bug is
 never in what arrives, only in how two different parsers read identical input.
 
 Reading that, I did not go looking for a way to smuggle a weird character past a
-filter. The interesting words were "both layers," and the win condition almost
-wrote itself: I need the gateway to see `scope=public` so it forwards the
-request, and the export service to see `scope=internal` so it leaks the token,
-and I need both of those to be true of one request at the same time. If I can
-make the two stages read the body differently, I win.
+filter. The interesting words were "both layers," and the win condition wrote
+itself: the gateway has to see `scope=public` so it forwards the request, and the
+export service has to see `scope=internal` so it leaks the token. Both have to be
+true of one request at the same time. If the two stages can be made to read the
+body differently, the request passes one check and fails the other.
 
-## Reading how each layer reads
+## How each layer reads the boundary
 
 Two stages, two chances to parse the boundary differently. So the first thing I
 did was find where each one actually decides what the boundary is.
@@ -88,18 +80,17 @@ for name, value in parameters:
 ![The gateway's inspection_boundary parser](../../assets/images/yeswehack-dojo-55-split-decision/gateway-inspection-boundary.png)
 
 This is the first half of the vulnerability: a hand-rolled boundary parser. It
-splits the `Content-Type` on `;` and walks the parameters with a regex instead
-of using a real MIME parser. That is what gives it room to disagree with the
-library parser waiting on the other side.
+splits the `Content-Type` on `;` and walks the parameters with a regex instead of
+using a real MIME parser. That is what gives it room to disagree with the library
+parser waiting on the other side.
 
-Look at what that does. The first block goes out of its way to *accept*
-parameters like `boundary*0`, `boundary*1`, `boundary*0*`, the RFC 2231
-continuation forms. Then the selection loop below it only ever returns a value
-whose name is exactly `boundary`. So the gateway tolerates those `boundary*`
-parameters and then completely ignores them. Code that carefully permits
-something it never uses is usually trusting someone else to deal with it, and
-that someone else is the export service, which parses with Python's standard
-library:
+Look at what that does. The first block goes out of its way to accept parameters
+like `boundary*0`, `boundary*1`, `boundary*0*`, the RFC 2231 continuation forms.
+Then the selection loop below it only ever returns a value whose name is exactly
+`boundary`. So the gateway tolerates those `boundary*` parameters and then
+completely ignores them. Code that carefully permits something it never uses is
+usually trusting someone else to deal with it. That someone else is the export
+service, which parses with Python's standard library:
 
 ```python
 edge_boundary = inspection_boundary(content_type)                     # gateway regex
@@ -113,7 +104,7 @@ scope = application_view.get("scope")
 
 This is the whole bug in six lines, and it is the second half of the
 vulnerability. The edge gateway decides with `inspection_boundary` and demands
-`scope == "public"`. The Bundle API then re-parses the *same, untouched* request
+`scope == "public"`. The Bundle API then re-parses the same, untouched request
 with `BytesParser(policy=policy.default)` and reads its own `scope`. The request
 that gets approved and the request that gets acted on are never parsed by the
 same code, so they can be made to hold two different scopes at once.
@@ -125,7 +116,7 @@ understand a parameter that the export service takes seriously. Hand them both a
 plain `boundary=` and an RFC 2231 one, and they will pick different boundaries,
 and then they will cut the body in different places.
 
-## Not trusting the hunch
+## Verifying the split
 
 A theory about parser behavior is worth very little until you have run both
 parsers on the same input and watched them disagree. So I did exactly that:
@@ -143,14 +134,14 @@ multipart/form-data; boundary*0=bbbb; boundary=aaaa
 There it was. One header, two boundaries. The gateway reads `aaaa`, Python reads
 `bbbb`.
 
-The detail I would never have guessed without running it is that **order
-matters**. The continuation has to come *before* the plain parameter. If I write
+The detail I would never have guessed without running it is that order matters.
+The continuation has to come before the plain parameter. If I write
 `boundary=aaaa; boundary*0=bbbb` instead, Python quietly falls back to the plain
 value, both sides agree on `aaaa`, and the split vanishes. That little asymmetry
 in how `email` prefers a sectioned parameter over a plain one, depending on where
 it appears, is the real heart of the challenge. Everything else is plumbing.
 
-## Letting each layer read its own story
+## Building a body for each parser
 
 Once I had two boundaries, the body was just staging. Multipart parsers ignore
 anything before the first delimiter (the preamble) and anything after the closing
@@ -185,32 +176,10 @@ preamble, so it is discarded. The export service sees one part with
 
 Same bytes. Each layer confidently reads the half that was written for it.
 
-## Watching it pay off
+## The exploit
 
-With the two inputs in hand:
-
-**Content-Type**
-
-```text
-multipart/form-data; boundary*0=bbbb; boundary=aaaa
-```
-
-**Body**
-
-```text
---aaaa
-Content-Disposition: form-data; name="scope"
-
-public
---aaaa--
---bbbb
-Content-Disposition: form-data; name="scope"
-
-internal
---bbbb--
-```
-
-The gateway waves it through as a public export, the export service builds an
+Sent to `/v1/support/bundles/preview` with that header and that body, the gateway
+waves the request through as a public export, the export service builds an
 internal one, and the response comes back with the scope flipped and redaction
 switched off:
 
@@ -229,9 +198,9 @@ supposed to leave the network.
 ## The fix
 
 The fix is the boring, correct one, which is usually how these go. The real
-problem is that the component that *approves* a request and the component that
-*acts* on it parse that request with two different parsers, so they can be made
-to disagree. Close the gap and the bug has nowhere to live:
+problem is that the component that approves a request and the component that acts
+on it parse that request with two different parsers, so they can be made to
+disagree. Close the gap and the bug has nowhere to live:
 
 - Parse the `Content-Type` and body exactly once, with a single RFC-compliant
   parser, and use that one result for both the policy check and the action.
@@ -246,16 +215,16 @@ is advisory at best.
 
 After I solved it, the challenge authors shared the payload they had in mind, and
 it is worth showing, because it reaches the same split through a different door.
-Where I used RFC 2231's *continuation* syntax (`boundary*0=`), the intended
-solution uses its *extended-value* syntax, `boundary*=charset'language'value`:
+Where I used RFC 2231's continuation syntax (`boundary*0=`), the intended solution
+uses its extended-value syntax, `boundary*=charset'language'value`:
 
-**Content-Type**
+The header:
 
 ```text
 multipart/form-data; boundary*=us-ascii''i; boundary=p
 ```
 
-**Body**
+The body:
 
 ```text
 --p
@@ -301,7 +270,7 @@ meant someone downstream was expected to deal with them, and that someone was
 Python's `email` module reading RFC 2231.
 
 The rest of what I am taking away is about method more than about MIME. I would
-have gotten the ordering backwards if I had only argued it in my head; printing
+have gotten the ordering backwards if I had only argued it in my head. Printing
 the two boundaries side by side settled it in seconds, and the part that
 surprised me, that the order of the parameters matters, only surfaced because I
 ran the parsers instead of reasoning about them. Once they disagreed, the body
