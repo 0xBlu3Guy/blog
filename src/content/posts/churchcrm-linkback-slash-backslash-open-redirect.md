@@ -177,11 +177,9 @@ every redirect target in the app inherits the correction.
 ## Disclosure
 
 I reported this to ChurchCRM through a private security advisory on 2 October.
-The maintainer triaged it against master on 2026-10-10, confirmed the bypass,
-and scored it Low at 3.5, CVSS
-`AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:L/A:N`, CWE-601. The fix shipped in 7.8.1 on
-2026-10-18, and the advisory went public after that. No CVE was assigned, and the
-maintainer credited me as the reporter.
+The maintainer triaged it against master on 2026-10-10, confirmed the bypass, and
+shipped a fix eight days later. No CVE was assigned, and the maintainer credited
+me as the reporter.
 
 Low is the right score and I would not argue for more. An authenticated user who
 follows a crafted link on the ChurchCRM host lands on an external origin. The
@@ -189,6 +187,15 @@ link they clicked is on your domain, and it can drop them on a page that imitate
 the ChurchCRM login form, which is a phishing primitive and nothing more. There
 is no server-side data exposure here and no state change. The redirect does not
 know or care who is signed in.
+
+| Field    | Value |
+|----------|-------|
+| Advisory | [GHSA-jmfg-pc4m-xp53](https://github.com/ChurchCRM/CRM/security/advisories/GHSA-jmfg-pc4m-xp53) |
+| CVE      | Not assigned |
+| Severity | Low, CVSS 3.5 (`CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:L/A:N`) |
+| Weakness | [CWE-601](https://cwe.mitre.org/data/definitions/601.html) |
+| Affected | 7.7.1 and earlier |
+| Patched  | [7.8.1](https://github.com/ChurchCRM/CRM/releases/tag/7.8.1) |
 
 ## What I took away
 
