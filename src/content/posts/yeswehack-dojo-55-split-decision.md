@@ -21,10 +21,22 @@ That disagreement is the part I find interesting in this class of bug.
 length mismatch. This one scratched the same itch from a different angle: a
 parser differential hiding in a multipart `Content-Type`.
 
-I used AI heavily on this one. Making sense of the two parsers, reading RFC 2231
-properly, and seeing why parameter order mattered all came out of working through
-it that way. The words here are mine; the understanding behind them was not all
-my own.
+> [!NOTE] TL;DR
+> A diagnostic bundle passes through a validating gateway before an export
+> service acts on it. The gateway reads the multipart boundary with a hand-rolled
+> regex that only honors a plain `boundary=`. The export service re-parses the
+> same header with Python's `email` module, which implements RFC 2231 and
+> assembles `boundary*0=`. Put `boundary*0=bbbb` before `boundary=aaaa`, and the
+> two layers split the body on different delimiters: the gateway sees
+> `scope=public` and forwards the request, while the export service sees
+> `scope=internal` and hands back the token.
+
+> [!NOTE] How I Used AI
+> This one was hard for me, and a lot of my understanding of it came from
+> working through it with AI. I leaned on it to make sense of the two parsers,
+> to read RFC 2231 properly, and to see why the parameter ordering mattered. The
+> words here are mine, but the understanding behind them was not all my own this
+> time.
 
 ## The two-stage pipeline
 
