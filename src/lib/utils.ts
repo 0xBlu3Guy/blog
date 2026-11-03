@@ -67,6 +67,13 @@ export function formatDate(date: Date): string {
   });
 }
 
+/** "15 Sep 2026", day first, for the article header. Built by hand because
+ *  en-GB renders September as "Sept". */
+export function formatDateDayFirst(date: Date): string {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
 /** "2026-09-15", for <time datetime="..."> */
 export function isoDate(date: Date): string {
   return date.toISOString().slice(0, 10);

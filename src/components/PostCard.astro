@@ -6,13 +6,16 @@ import Tag from './Tag.astro';
 
 interface Props {
   post: Post;
-  /** Tag pages already state the reading context, so they hide it. */
+  /** Tag pages already state the reading context, so they hide the disc. */
   showReadingTime?: boolean;
 }
 
 const { post, showReadingTime = true } = Astro.props;
 const summary = post.data.description || excerpt(post.body ?? '');
 const minutes = readingTime(post.body ?? '');
+const url = href(`/posts/${post.id}`);
+// Absolute, so the copied link works pasted anywhere.
+const shareUrl = new URL(url, Astro.site).href;
 ---
 
 <li
@@ -23,7 +26,7 @@ const minutes = readingTime(post.body ?? '');
 >
   <article>
     <h2 class="post-card__title">
-      <a href={href(`/posts/${post.id}`)}>{post.data.title}</a>
+      <a href={url}>{post.data.title}</a>
     </h2>
     {summary && <p class="post-card__excerpt">{summary}</p>}
     <div class="post-card__footer">
@@ -34,7 +37,49 @@ const minutes = readingTime(post.body ?? '');
           ))}
         </ul>
       )}
-      <PostMeta date={post.data.date} minutes={showReadingTime ? minutes : undefined} />
+      <PostMeta date={post.data.date} />
+      {showReadingTime && (
+        <span
+          class="rt-disc post-card__disc"
+          title={`${minutes} min read`}
+          aria-label={`${minutes} minute read`}
+        >
+          <span class="rt-disc__n">{minutes}</span>
+          <span class="rt-disc__u">min</span>
+        </span>
+      )}
     </div>
   </article>
+
+  <button class="share-btn share-btn--card" type="button" data-copy={shareUrl}>
+    <svg class="share-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+    <svg class="share-btn__tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+    <span class="visually-hidden">Copy link to this post</span>
+  </button>
 </li>
+
+<script>
+  // Copy the post URL. One handler per page, whether the card appears once on
+  // an article list or many times on the index.
+  document.querySelectorAll<HTMLButtonElement>('.share-btn[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const url = btn.dataset.copy ?? '';
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        // Older browsers and plain http. Kept as a fallback, not the main path.
+        const tmp = document.createElement('textarea');
+        tmp.value = url;
+        tmp.setAttribute('readonly', '');
+        tmp.style.position = 'fixed';
+        tmp.style.opacity = '0';
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        tmp.remove();
+      }
+      btn.dataset.copied = 'true';
+      setTimeout(() => delete btn.dataset.copied, 1600);
+    });
+  });
+</script>

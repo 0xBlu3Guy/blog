@@ -3,12 +3,11 @@ import { formatDate, isoDate } from '../lib/utils';
 
 interface Props {
   date: Date;
-  minutes?: number;
-  /** Shown after the reading time when a post has been revised later. */
+  /** Shown after the date when a post has been revised later. */
   updated?: Date;
 }
 
-const { date, minutes, updated } = Astro.props;
+const { date, updated } = Astro.props;
 ---
 
 <p class="post-meta">
@@ -21,5 +20,4 @@ const { date, minutes, updated } = Astro.props;
       </span>
     </>
   )}
-  {minutes !== undefined && <> · {minutes} min read</>}
 </p>

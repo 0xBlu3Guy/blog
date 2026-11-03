@@ -31,6 +31,9 @@ export default defineConfig({
   site,
   base,
   trailingSlash: 'ignore',
+  // The floating toolbar sits over the bottom of the page and covers controls
+  // while inspecting layouts locally. Re-enable it when debugging Astro itself.
+  devToolbar: { enabled: false },
   integrations: [sitemap(), csp()],
   markdown: {
     // `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`,

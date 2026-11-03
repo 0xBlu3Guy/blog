@@ -1,9 +1,8 @@
 ---
 import type { Post } from '../lib/posts';
 import BaseLayout from './BaseLayout.astro';
-import PostMeta from '../components/PostMeta.astro';
 import Tag from '../components/Tag.astro';
-import { excerpt, href, readingTime } from '../lib/utils';
+import { excerpt, href, readingTime, formatDateDayFirst, isoDate } from '../lib/utils';
 import { updatedDate } from '../lib/git';
 import { Image } from 'astro:assets';
 
@@ -40,16 +39,31 @@ const showDraftBadge = post.data.draft && import.meta.env.DEV;
 
     <header class="article__header">
       <h1 class="article__title">{title}</h1>
-      <div class="article__meta">
-        <PostMeta date={date} minutes={minutes} updated={updated} />
+      <div class="article__meta-row">
+        {tags.length > 0 && (
+          <ul class="tag-list">
+            {tags.map((tag) => (
+              <li><Tag name={tag} /></li>
+            ))}
+          </ul>
+        )}
+        <p class="article__eyebrow">
+          <time datetime={isoDate(date)}>{formatDateDayFirst(date)}</time>
+          {updated && (
+            <>
+              <span class="article__dot" aria-hidden="true">·</span>
+              <span class="article__updated">
+                Updated <time datetime={isoDate(updated)}>{formatDateDayFirst(updated)}</time>
+              </span>
+            </>
+          )}
+          <span class="article__dot" aria-hidden="true">·</span>
+          <span class="article__read">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>
+            {minutes} min
+          </span>
+        </p>
       </div>
-      {tags.length > 0 && (
-        <ul class="tag-list">
-          {tags.map((tag) => (
-            <li><Tag name={tag} /></li>
-          ))}
-        </ul>
-      )}
     </header>
 
     {image && (

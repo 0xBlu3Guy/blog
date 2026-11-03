@@ -780,12 +780,48 @@ main {
   margin-bottom: 12px;
 }
 
-.article__meta {
+.article__meta-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 14px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 14px;
+}
+
+.article__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.article__dot {
+  color: var(--border-strong);
+}
+
+.article__read {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.article__read svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.article__updated {
+  color: var(--accent);
 }
 
 .article__hero {
@@ -1528,6 +1564,146 @@ h4,
 .site-footer__links {
   display: flex;
   gap: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+   Reading time disc
+   A filled circle with the minute count and the unit under it. No arc, so
+   nothing implies a scale: it is a badge, not a percentage.
+--------------------------------------------------------------------------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rt-disc {
+  display: inline-grid;
+  gap: 0;
+  align-content: center;
+  justify-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.rt-disc__n {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rt-disc__u {
+  font-size: 0.46rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Sits at the end of the card's meta row, opposite the tags. */
+.post-card__disc {
+  margin-left: auto;
+}
+
+.post-card:hover .rt-disc {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+/* ---------------------------------------------------------------------------
+   Share button
+   Copies the post URL. Lives in the card corner, above the overlay link.
+--------------------------------------------------------------------------- */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font: inherit;
+  color: var(--text-faint);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.share-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.share-btn__tick {
+  display: none;
+}
+
+.share-btn:hover {
+  color: var(--accent);
+}
+
+.share-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.share-btn--card {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.share-btn--card:hover {
+  opacity: 1;
+  background: var(--accent-soft);
+}
+
+.share-btn[data-copied] {
+  color: #4ec27e;
+}
+
+.share-btn[data-copied] .share-btn__icon {
+  display: none;
+}
+
+.share-btn[data-copied] .share-btn__tick {
+  display: block;
+}
+
+@media (max-width: 520px) {
+  .rt-disc {
+    width: 34px;
+    height: 34px;
+  }
+
+  .rt-disc__n {
+    font-size: 0.82rem;
+  }
+
+  .rt-disc__u {
+    font-size: 0.42rem;
+  }
 }
 
 /* ---------------------------------------------------------------------------
